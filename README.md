@@ -100,6 +100,11 @@ This is also my exploration of designing **agent-friendly projects**: clear rout
 </p>
 <p align="center"><i>Add a job: paste the description, get a standard folder and the next step.</i></p>
 
+<p align="center">
+  <img src="docs/screenshots/profile.png" alt="Profile editor" width="900" />
+</p>
+<p align="center"><i>Profile editor: unfinished items are highlighted, with a button that jumps to the next one.</i></p>
+
 ---
 
 ## Key Features
@@ -127,10 +132,14 @@ This is also my exploration of designing **agent-friendly projects**: clear rout
 - Follow-up after applying, same-day thank-you after an interview, offer comparison and negotiation drafts, graceful rejection replies, and a weekly review of what is working
 
 ### 5. Dashboard
-- Kanban pipeline with due follow-ups, one-click status changes, file viewer (Markdown rendered, PDF embedded) and editor
-- **Add job** form that creates the folder and gives you the next prompt
-- Profile editor that highlights unfinished `TODO` items
-- Light and dark theme, keyboard-accessible, works on a phone-width screen
+- **Kanban pipeline** with search, drag-and-drop between stages, follow-up reminders and a per-card progress bar (analysis, CV, email, prep)
+- **"Next step" guidance** on every job: it tells you what to do next and copies the right prompt for your AI assistant
+- **Add job** form with validation, a custom themed calendar and dropdowns, and a ready-to-paste prompt after the folder is created
+- File viewer (Markdown rendered, PDF embedded) and editor, with protection against losing unsaved changes
+- **Safe delete:** deleting a job moves it to a Trash page where you can restore it (or undo straight away). Deleting from Trash is permanent and asks for confirmation first
+- Profile editor that highlights unfinished `TODO` / `[FILL IN]` items and jumps to the next one
+- Edit company, role and link after creating a job
+- Light and dark theme, keyboard shortcuts (`/` search, `N` new job, `Esc` close), accessible focus handling, phone-friendly layout
 - **Demo mode** with fictional data, read-only, safe to show or host
 
 ### Cross-cutting
@@ -233,9 +242,11 @@ Open http://127.0.0.1:8765. The demo is read-only.
 4. Put your Word CV at `profile/base_cv.docx` (see [profile/README.md](profile/README.md) for the required headings) and adjust `PROJECT_KEYS` in `scripts/build_cv.py` to your project names.
 
 ### Run it
+Double-click `start-dashboard.cmd` (keep its window open), or run:
 ```powershell
 python ui/server.py        # dashboard at http://127.0.0.1:8765
 ```
+Open http://127.0.0.1:8765 in your browser. Do not open `ui/index.html` directly; the page needs the small local server.
 Then **Add job**, paste the description, copy the prompt, and paste it into your AI assistant opened in this folder.
 
 You can also skip the dashboard and tell your assistant in plain words: *"Apply to this job: ..."*, *"Prepare me for my interview at ..."*, *"Run a mock interview"*. `AGENTS.md` routes each request to the right workflow.
@@ -295,6 +306,7 @@ Job-Application-System/
 │   ├── to_pdf.py             docx → pdf through Word, prints page count
 │   ├── track.py              application tracker (applications.csv)
 │   └── check_links.py        wake live demo links
+├── start-dashboard.cmd       double-click launcher for the dashboard
 ├── ui/
 │   ├── server.py             local dashboard server (--demo for sample data)
 │   ├── index.html            the dashboard

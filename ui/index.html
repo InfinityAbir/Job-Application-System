@@ -3,137 +3,320 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Job Pipeline</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235b8cff'/%3E%3Cstop offset='1' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Crect x='7' y='8' width='5' height='16' rx='1.6' fill='white'/%3E%3Crect x='13.5' y='8' width='5' height='11' rx='1.6' fill='white' opacity='.85'/%3E%3Crect x='20' y='8' width='5' height='7' rx='1.6' fill='white' opacity='.7'/%3E%3C/svg%3E">
 <style>
 :root{
-  --bg:#f6f7f9; --surface:#ffffff; --surface-2:#f0f2f5; --border:#e2e5ea; --text:#17202b; --muted:#667085;
-  --accent:#2457e6; --accent-ink:#ffffff; --ok:#12805c; --warn:#b54708; --bad:#c0262d; --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 16px rgba(16,24,40,.05);
-  --applied:#2457e6; --interview:#7a3df0; --offer:#12805c; --rejected:#8a929e; --ghosted:#b54708;
-  color-scheme:light;
+  --bg:#f5f6f8; --surface:#ffffff; --surface-2:#eff1f5; --surface-3:#e6e9ef; --border:#e1e4ea; --text:#141b26; --muted:#657084;
+  --accent:#2f5fe8; --accent-2:#7a4cf0; --accent-ink:#ffffff; --accent-soft:rgba(47,95,232,.1);
+  --ok:#12805c; --warn:#b54708; --bad:#c0262d; --bad-soft:rgba(192,38,45,.1);
+  --applied:#2f5fe8; --interview:#7a4cf0; --offer:#12805c; --rejected:#7d8798; --ghosted:#b54708;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05); --shadow-lg:0 12px 32px rgba(16,24,40,.16),0 2px 6px rgba(16,24,40,.08);
+  --r:12px; color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1319; --surface:#171c24; --surface-2:#1f2631; --border:#2a3240; --text:#e8ecf2; --muted:#98a2b3;
-  --accent:#6b93ff; --accent-ink:#0b1020; --ok:#4cc79b; --warn:#f0a35e; --bad:#ff7b80; --shadow:0 1px 2px rgba(0,0,0,.4);
-  --applied:#6b93ff; --interview:#a98bff; --offer:#4cc79b; --rejected:#7b8494; --ghosted:#f0a35e; color-scheme:dark;}}
+  --bg:#0e1218; --surface:#161b23; --surface-2:#1d2430; --surface-3:#262e3c; --border:#2a3341; --text:#e9edf3; --muted:#9aa5b6;
+  --accent:#6f97ff; --accent-2:#a58bff; --accent-ink:#0a1020; --accent-soft:rgba(111,151,255,.14);
+  --ok:#4cc79b; --warn:#f0a35e; --bad:#ff7b80; --bad-soft:rgba(255,123,128,.14);
+  --applied:#6f97ff; --interview:#a58bff; --offer:#4cc79b; --rejected:#808a9b; --ghosted:#f0a35e;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25); --shadow-lg:0 16px 40px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.4); color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#0f1319; --surface:#171c24; --surface-2:#1f2631; --border:#2a3240; --text:#e8ecf2; --muted:#98a2b3;
-  --accent:#6b93ff; --accent-ink:#0b1020; --ok:#4cc79b; --warn:#f0a35e; --bad:#ff7b80; --shadow:0 1px 2px rgba(0,0,0,.4);
-  --applied:#6b93ff; --interview:#a98bff; --offer:#4cc79b; --rejected:#7b8494; --ghosted:#f0a35e; color-scheme:dark;}
+  --bg:#0e1218; --surface:#161b23; --surface-2:#1d2430; --surface-3:#262e3c; --border:#2a3341; --text:#e9edf3; --muted:#9aa5b6;
+  --accent:#6f97ff; --accent-2:#a58bff; --accent-ink:#0a1020; --accent-soft:rgba(111,151,255,.14);
+  --ok:#4cc79b; --warn:#f0a35e; --bad:#ff7b80; --bad-soft:rgba(255,123,128,.14);
+  --applied:#6f97ff; --interview:#a58bff; --offer:#4cc79b; --rejected:#808a9b; --ghosted:#f0a35e;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25); --shadow-lg:0 16px 40px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.4); color-scheme:dark;}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-button,input,select,textarea{font:inherit;color:inherit}
+body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
 a{color:var(--accent)}
-.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-aside{background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
-.brand{font-weight:700;font-size:15px;padding:4px 10px 14px;display:flex;align-items:center;gap:8px}
-.brand i{width:22px;height:22px;border-radius:6px;background:var(--accent);display:inline-block}
-nav button{display:flex;width:100%;align-items:center;gap:10px;background:none;border:0;border-radius:8px;padding:9px 10px;text-align:left;cursor:pointer;color:var(--muted)}
-nav button:hover{background:var(--surface-2);color:var(--text)}
-nav button[aria-current="page"]{background:var(--surface-2);color:var(--text);font-weight:600}
-nav .count{margin-left:auto;font-size:12px;background:var(--bad);color:#fff;border-radius:99px;padding:0 7px}
-.side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:8px 10px}
-main{padding:28px 32px;max-width:1500px;width:100%;min-width:0}
-h1{font-size:22px;margin:0 0 4px}
-.sub{color:var(--muted);margin:0 0 20px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
-.stat b{display:block;font-size:24px;line-height:1.2}
-.stat span{color:var(--muted);font-size:12px}
-.board{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:14px;overflow-x:auto;padding-bottom:8px}
-.col{background:var(--surface-2);border-radius:12px;padding:10px;min-height:120px}
-.col h3{margin:2px 6px 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;justify-content:space-between}
-.col h3::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block;margin-right:8px;align-self:center}
-.col h3 span:first-child{display:flex;align-items:center}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow);width:100%;text-align:left;display:block}
-.card:hover{border-color:var(--accent)}
-.card:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.card b{display:block}
-.card small{color:var(--muted)}
-.pill{display:inline-block;font-size:11px;border-radius:99px;padding:1px 8px;margin-top:6px;border:1px solid var(--border);color:var(--muted)}
-.pill.due{color:var(--bad);border-color:var(--bad);font-weight:600}
-.empty{color:var(--muted);font-size:13px;padding:6px 8px}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:860px}
-label{display:block;font-weight:600;font-size:13px;margin:14px 0 4px}
-input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
-textarea{min-height:220px;font-family:ui-monospace,Consolas,monospace;font-size:13px;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
-.btn.sec{background:var(--surface-2);color:var(--text);border:1px solid var(--border);font-weight:500}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.hint{color:var(--muted);font-size:12px;margin-top:4px}
-.banner{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid var(--warn);color:var(--text);border-radius:10px;padding:10px 14px;margin-bottom:18px}
-/* drawer */
-.scrim{position:fixed;inset:0;background:rgba(10,14,20,.45);display:none;z-index:10}
-.scrim.open{display:block}
-.drawer{position:fixed;top:0;right:0;height:100%;width:min(1040px,100%);background:var(--bg);z-index:11;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.2)}
-.drawer.open{transform:none}
-@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
-.d-head{padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:12px;align-items:flex-start}
-.d-head h2{margin:0;font-size:18px}
-.d-body{display:grid;grid-template-columns:270px 1fr;flex:1;min-height:0}
-.d-side{border-right:1px solid var(--border);overflow:auto;padding:16px;background:var(--surface)}
-.d-main{overflow:auto;padding:18px 22px}
-.files{list-style:none;margin:8px 0;padding:0}
-.files button{width:100%;text-align:left;background:none;border:0;padding:5px 8px;border-radius:6px;cursor:pointer;color:var(--text);font-size:13px;word-break:break-all}
-.files button:hover{background:var(--surface-2)}
-.files button[aria-current="true"]{background:var(--surface-2);font-weight:600}
-.files .grp{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 8px 2px}
-.viewer{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;min-height:300px}
-.viewer pre{white-space:pre-wrap;font:13px/1.55 ui-monospace,Consolas,monospace;margin:0}
-.viewer iframe{width:100%;height:70vh;border:0;border-radius:8px}
-.md h1{font-size:20px;margin:0 0 10px}.md h2{font-size:16px;margin:20px 0 6px}.md h3{font-size:14px;margin:16px 0 4px}
-.md p{margin:8px 0}.md ul,.md ol{margin:6px 0 6px 20px;padding:0}.md code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:12.5px}
-.md table{border-collapse:collapse;margin:10px 0;width:100%}.md th,.md td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top}.md th{background:var(--surface-2)}
-.md hr{border:0;border-top:1px solid var(--border);margin:16px 0}
-.md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid var(--border);color:var(--muted)}
-.out{background:var(--surface-2);border-radius:8px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;margin-top:10px;max-height:240px;overflow:auto}
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:30;display:none;max-width:90vw}
-.toast.show{display:block}
-.promptbox{background:var(--surface-2);border:1px dashed var(--border);border-radius:8px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;margin-top:8px;white-space:pre-wrap}
-.todo{background:color-mix(in srgb,var(--warn) 25%,transparent);border-radius:3px}
+.ic{flex:none;display:block}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+*{scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
+[hidden]{display:none!important}
+
+/* layout */
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.rail{background:var(--surface);border-right:1px solid var(--border);padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 18px;font-weight:700;font-size:15px;letter-spacing:-.01em}
+.brand svg{border-radius:9px;box-shadow:0 2px 8px rgba(91,140,255,.35)}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:0}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;width:100%;align-items:center;gap:11px;background:none;border:0;border-radius:10px;padding:9px 10px;text-align:left;color:var(--muted);font-weight:500;transition:background .15s,color .15s}
+.nav button:hover{background:var(--surface-2);color:var(--text)}
+.nav button[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.badge{margin-left:auto;min-width:20px;text-align:center;font-size:11px;font-weight:700;border-radius:99px;padding:1px 7px;background:var(--surface-3);color:var(--muted)}
+.badge.due{background:var(--bad);color:#fff}
+.rail-foot{margin-top:auto;display:flex;align-items:center;gap:8px;padding:10px 8px 2px;border-top:1px solid var(--border);color:var(--muted);font-size:12px}
+.rail-foot .mode{flex:1;display:flex;align-items:center;gap:7px}
+.dotlive{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(18,128,92,.18)}
+.icon-btn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--muted);transition:background .15s,color .15s}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+.icon-btn.danger:hover{background:var(--bad-soft);color:var(--bad)}
+main{padding:28px 34px 60px;max-width:1560px;width:100%;min-width:0}
+.page-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.page-head .grow{flex:1;min-width:220px}
+h1{font-size:24px;letter-spacing:-.02em;margin:0 0 2px}
+.sub{color:var(--muted);margin:0}
+h3{margin:0}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;background:var(--accent);color:var(--accent-ink);border:1px solid transparent;border-radius:10px;padding:8px 14px;font-weight:600;transition:filter .15s,transform .05s,background .15s;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:var(--surface);color:var(--text);border-color:var(--border);font-weight:500}
+.btn.sec:hover{background:var(--surface-2);filter:none}
+.btn.ghost{background:none;color:var(--muted);border-color:transparent;font-weight:500}
+.btn.ghost:hover{background:var(--surface-2);color:var(--text);filter:none}
+.btn.danger{background:var(--bad);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.link-btn{background:none;border:0;color:var(--accent);font-weight:600;padding:6px 8px;border-radius:8px}
+.link-btn:hover{background:var(--accent-soft)}
+label.lbl,.lbl{display:block;font-weight:600;font-size:12.5px;margin:0 0 6px;color:var(--text)}
+.field{margin-bottom:16px}
+.field .err{color:var(--bad);font-size:12px;margin-top:4px;display:none}
+.field.invalid .err{display:block}
+.field.invalid .input,.field.invalid .ctl{border-color:var(--bad)}
+.input,textarea.input,.ctl{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;transition:border-color .15s,box-shadow .15s}
+.input:hover,.ctl:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
+.input:focus,.ctl:focus-visible,.ctl[aria-expanded="true"]{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.input::placeholder{color:var(--muted);opacity:.75}
+textarea.input{min-height:220px;font-family:ui-monospace,Consolas,monospace;font-size:13px;resize:vertical;line-height:1.55}
+.ctl-wrap{position:relative}
+.ctl{display:flex;align-items:center;gap:9px;text-align:left;min-height:40px}
+.ctl .ctl-val{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctl .ctl-val.ph{color:var(--muted);opacity:.8}
+.ctl > .ic:last-child{color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.search{position:relative;min-width:240px}
+.search .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search .input{padding-left:36px;padding-right:34px}
+.kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:11px ui-monospace,Consolas,monospace;border:1px solid var(--border);border-radius:6px;padding:0 6px;color:var(--muted);background:var(--surface-2)}
+.hint{color:var(--muted);font-size:12px}
+
+/* popover (custom dropdown + calendar) */
+#pop{position:fixed;z-index:80;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);padding:6px;max-height:min(380px,65vh);overflow:auto;animation:pop .12s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.opt{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;user-select:none}
+.opt .ic{margin-left:auto;color:var(--accent)}
+.opt.active,.opt:hover{background:var(--surface-2)}
+.opt[aria-selected="true"]{font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.cal{width:284px;padding:6px}
+#pop:has(.cal){max-height:none;overflow:visible}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.cal-title{font-weight:700}
+.cal-week,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-week span{text-align:center;font-size:11px;font-weight:600;color:var(--muted);padding:4px 0}
+.day{height:34px;border-radius:9px;border:0;background:none;color:var(--text);font-weight:500;position:relative}
+.day:hover{background:var(--surface-2)}
+.day.out{color:var(--muted);opacity:.5}
+.day.today{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.day.sel{background:var(--accent);color:var(--accent-ink);font-weight:700;opacity:1}
+.day.focus{outline:2px solid var(--accent);outline-offset:-2px}
+.cal-foot{display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+
+/* cards, stats, board */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.stat .si{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.stat b{display:block;font-size:22px;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat span.l{color:var(--muted);font-size:12px}
+.stat.warn .si{background:var(--bad-soft);color:var(--bad)}
+.board{display:grid;grid-template-columns:repeat(5,minmax(214px,1fr));gap:14px;overflow-x:auto;padding-bottom:10px;align-items:start}
+.col{background:var(--surface-2);border-radius:14px;padding:10px;min-height:150px;transition:background .15s,box-shadow .15s}
+.col.over{background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent)}
+.col h3{margin:2px 6px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;align-items:center;gap:8px}
+.col h3 .cnt{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:0 8px;font-size:11px}
+.col h3 i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow);width:100%;text-align:left;display:block;transition:border-color .15s,transform .15s,box-shadow .15s}
+.card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.card.dragging{opacity:.45}
+.card-top{display:flex;gap:10px;align-items:center}
+.avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:12.5px;color:#fff;background:hsl(var(--h) 52% 46%);flex:none}
+.card b{display:block;line-height:1.25}
+.card small{color:var(--muted);display:block;line-height:1.3}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;border-radius:99px;padding:2px 8px;border:1px solid var(--border);color:var(--muted);background:var(--surface)}
+.pill.due{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent);background:var(--bad-soft);font-weight:600}
+.pill.soon{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.pill.status{color:var(--c);border-color:color-mix(in srgb,var(--c) 40%,transparent);font-weight:600}
+.prog{display:flex;gap:3px;margin-top:10px}
+.prog i{flex:1;height:4px;border-radius:4px;background:var(--surface-3)}
+.prog i.on{background:var(--ok)}
+.note{color:var(--muted);font-size:12px;margin-top:8px}
+.empty{color:var(--muted);font-size:13px;padding:14px 8px;text-align:center}
+.empty-state{background:var(--surface);border:1px dashed var(--border);border-radius:16px;padding:40px 20px;text-align:center;color:var(--muted)}
+.empty-state .eic{width:52px;height:52px;border-radius:16px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 12px}
+.empty-state h3{color:var(--text);margin-bottom:4px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:18px;align-items:start;max-width:1100px}
 .steps{counter-reset:s;list-style:none;padding:0;margin:0}
 .steps li{counter-increment:s;padding:10px 0 10px 40px;position:relative;border-bottom:1px solid var(--border)}
 .steps li:last-child{border:0}
-.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:26px;height:26px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;font-size:12px}
-@media (max-width:860px){
+.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:12px}
+.promptbox{background:var(--surface-2);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;font:12px/1.55 ui-monospace,Consolas,monospace;margin:8px 0;white-space:pre-wrap;word-break:break-word}
+.out{background:var(--surface-2);border-radius:10px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;margin-top:10px;max-height:240px;overflow:auto}
+.todo{background:color-mix(in srgb,var(--warn) 28%,transparent);border-radius:4px;padding:0 3px}
+.banner{display:flex;gap:10px;align-items:center;background:color-mix(in srgb,var(--warn) 13%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);border-radius:12px;padding:10px 14px;margin-bottom:18px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;color:var(--muted);font-weight:500}
+.tab[aria-selected="true"]{color:var(--accent);border-color:var(--accent);font-weight:600}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.list-row:last-child{border:0}
+.list-row .grow{flex:1;min-width:0}
+.skeleton{height:90px;border-radius:12px;background:linear-gradient(90deg,var(--surface-2),var(--surface-3),var(--surface-2));background-size:200% 100%;animation:sh 1.2s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(8,12,18,.5);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(1080px,100%);background:var(--bg);z-index:21;transform:translateX(102%);visibility:hidden;transition:transform .24s cubic-bezier(.2,.8,.2,1),visibility 0s linear .24s;display:flex;flex-direction:column}
+.drawer.open{transform:none;visibility:visible;transition-delay:0s;box-shadow:-10px 0 40px rgba(0,0,0,.25)}
+.d-head{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:14px;align-items:center}
+.d-head h2{margin:0;font-size:18px;letter-spacing:-.01em}
+.d-body{display:grid;grid-template-columns:300px minmax(0,1fr);flex:1;min-height:0}
+.d-side{border-right:1px solid var(--border);overflow:auto;padding:16px;background:var(--surface);display:flex;flex-direction:column;gap:18px}
+.d-main{overflow:auto;padding:18px 22px}
+.sec-title{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;margin:0 0 8px}
+.check{display:flex;align-items:center;gap:9px;padding:4px 0;color:var(--muted)}
+.check.ok{color:var(--text)}
+.check .ci{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--border);flex:none}
+.check.ok .ci{background:var(--ok);border-color:var(--ok);color:#fff}
+.next{background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:12px;padding:12px}
+.next b{display:block;margin-bottom:2px}
+.next p{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+.files{list-style:none;margin:0;padding:0}
+.files button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;padding:6px 8px;border-radius:8px;color:var(--text);font-size:13px;word-break:break-all}
+.files button:hover{background:var(--surface-2)}
+.files button[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.files .grp{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:12px 8px 2px;display:flex;align-items:center;gap:6px}
+.viewer{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;min-height:320px;box-shadow:var(--shadow)}
+.viewer pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Consolas,monospace;margin:0}
+.viewer iframe{width:100%;height:72vh;border:0;border-radius:10px;background:#fff}
+.vbar{display:flex;align-items:center;gap:8px;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.vbar b{margin-right:auto;display:flex;align-items:center;gap:8px}
+.md h1{font-size:20px;margin:0 0 10px;letter-spacing:-.01em}.md h2{font-size:16px;margin:22px 0 6px}.md h3{font-size:14px;margin:16px 0 4px}
+.md p{margin:8px 0}.md ul,.md ol{margin:6px 0 6px 20px;padding:0}.md li{margin:2px 0}.md code{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-size:12.5px}
+.md table{border-collapse:collapse;margin:10px 0;width:100%;font-size:13px}.md th,.md td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top}.md th{background:var(--surface-2)}
+.md hr{border:0;border-top:1px solid var(--border);margin:16px 0}
+.md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid var(--border);color:var(--muted)}
+.md pre{background:var(--surface-2);padding:10px;border-radius:10px;overflow:auto}
+
+/* modal + toast */
+.modal-back{position:fixed;inset:0;background:rgba(8,12,18,.55);backdrop-filter:blur(2px);display:grid;place-items:center;z-index:90;padding:16px;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);padding:22px;width:min(440px,100%);animation:pop .16s ease-out}
+.modal-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);margin-bottom:12px}
+.modal-ic.danger{background:var(--bad-soft);color:var(--bad)}
+.modal h3{font-size:17px;margin-bottom:6px}
+.modal p{margin:0 0 18px;color:var(--muted)}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px}
+#toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;z-index:100;pointer-events:none;width:max-content;max-width:92vw}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:12px;background:var(--text);color:var(--bg);padding:10px 14px;border-radius:12px;box-shadow:var(--shadow-lg);animation:pop .16s ease-out;max-width:100%}
+.toast button{background:none;border:0;color:inherit;font-weight:700;text-decoration:underline;padding:0}
+.toast.err{background:var(--bad);color:#fff}
+
+/* responsive */
+@media (max-width:900px){
   .app{grid-template-columns:1fr}
-  aside{position:static;height:auto;flex-direction:row;overflow-x:auto;padding:10px;border-right:0;border-bottom:1px solid var(--border)}
-  .brand,.side-foot{display:none}
-  nav{display:flex;gap:4px}
-  nav button{white-space:nowrap}
-  main{padding:18px 16px}
-  .row{grid-template-columns:1fr}
+  .rail{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;padding:6px 8px;border-right:0;border-top:1px solid var(--border);z-index:15;justify-content:space-around}
+  .brand,.rail-foot{display:none}
+  .nav{flex-direction:row;width:100%;justify-content:space-around}
+  .nav button{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;text-align:center;justify-content:center;width:auto;flex:1}
+  .nav .badge{position:absolute;margin:0;transform:translate(14px,-12px)}
+  .nav button{position:relative}
+  main{padding:18px 16px 90px}
+  .row,.grid-2{grid-template-columns:1fr}
   .d-body{grid-template-columns:1fr;overflow:auto}
-  .d-side{border-right:0;border-bottom:1px solid var(--border)}
+  .d-side{border-right:0;border-bottom:1px solid var(--border);overflow:visible}
+  .d-main{overflow:visible}
+  .board{grid-template-columns:repeat(5,80vw)}
+  #toasts{bottom:84px}
+  .search{min-width:0;width:100%}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat{padding:10px 12px;gap:10px}
+  .stat b{font-size:19px}
+  .stat:last-child{grid-column:1/-1}
+  .d-head{padding:12px 14px}
+  .d-side,.d-main{padding:14px}
 }
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
 <div class="app">
-  <aside>
-    <div class="brand"><i></i> Job Pipeline</div>
-    <nav id="nav" aria-label="Main">
-      <button data-view="pipeline">Pipeline <span class="count" id="dueCount" hidden></span></button>
-      <button data-view="add">Add job</button>
-      <button data-view="profile">Profile</button>
-      <button data-view="tools">Tools &amp; help</button>
-    </nav>
-    <div class="side-foot"><span id="modeLabel">Local</span><br><button class="btn sec" id="themeBtn" style="margin-top:8px;padding:4px 10px;font-size:12px">Toggle theme</button></div>
+  <aside class="rail">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg)"/><rect x="7" y="8" width="5" height="16" rx="1.6" fill="#fff"/><rect x="13.5" y="8" width="5" height="11" rx="1.6" fill="#fff" opacity=".85"/><rect x="20" y="8" width="5" height="7" rx="1.6" fill="#fff" opacity=".7"/></svg>
+      <div>Job Pipeline<small>Apply. Prepare. Follow up.</small></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+    <div class="rail-foot"><div class="mode"><span class="dotlive"></span><span id="modeLabel">Local</span></div><button class="icon-btn" id="themeBtn" aria-label="Toggle light or dark theme" title="Toggle theme"></button></div>
   </aside>
   <main id="main"></main>
 </div>
 <div class="scrim" id="scrim"></div>
 <section class="drawer" id="drawer" aria-label="Job details" aria-hidden="true"></section>
-<div class="toast" id="toast" role="status"></div>
+<div id="pop" hidden></div>
+<div id="modal-root"></div>
+<div id="toasts" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
 const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-let S = null, view = "pipeline", openIdx = null, curFile = null, editing = false;
+
+/* ---------- icons ---------- */
+const ICONS = {
+  board: '<rect x="3" y="3" width="5" height="18" rx="1.5"/><rect x="10" y="3" width="5" height="12" rx="1.5"/><rect x="17" y="3" width="4" height="8" rx="1.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+  sliders: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  down: '<path d="M6 9l6 6 6-6"/>',
+  left: '<path d="M15 6l-6 6 6 6"/>',
+  right: '<path d="M9 6l6 6-6 6"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  file: '<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v5h5"/>',
+  pdf: '<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v5h5M8 15h2.5a1.5 1.5 0 0 0 0-3H8v6"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/>',
+  refresh: '<path d="M20 11a8 8 0 0 0-14-4L4 9M4 5v4h4M4 13a8 8 0 0 0 14 4l2-2M20 19v-4h-4"/>',
+  link: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  spark: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 1.8L21.5 18.5l-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/>',
+  alert: '<path d="M12 4l9 16H3zM12 10v4M12 17.2v.01"/>',
+  undo: '<path d="M4 9h11a5 5 0 0 1 0 10H8M4 9l4-4M4 9l4 4"/>',
+  inbox: '<path d="M4 13l2-8h12l2 8v6H4zM4 13h5l1 2h4l1-2h5"/>',
+  briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
+  bell: '<path d="M12 4a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6M10 20a2 2 0 0 0 4 0"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  clip: '<path d="M16 8l-7 7a2 2 0 0 1-3-3l8-8a4 4 0 0 1 6 6l-8.5 8.5a6 6 0 0 1-8.5-8.5"/>',
+};
+const ic = (n, s = 18) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+
+/* ---------- state ---------- */
+let S = null, view = "pipeline", openIdx = null, curFile = null, editing = false, q = "", profDirty = false;
 const LABEL = { applied: "Applied", interview: "Interview", offer: "Offer", rejected: "Rejected", ghosted: "No reply" };
+const NAV = [["pipeline", "board", "Pipeline"], ["add", "plus", "Add job"], ["profile", "user", "Profile"], ["trash", "trash", "Trash"], ["tools", "sliders", "Tools & help"]];
+const isDue = r => r.follow_up && r.follow_up <= S.today && ["applied", "interview"].includes(r.status);
+const isSoon = r => r.follow_up && !isDue(r) && ["applied", "interview"].includes(r.status) && (new Date(r.follow_up) - new Date(S.today)) / 864e5 <= 2;
+const hue = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const initials = s => String(s).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "?";
+const fmtDate = v => v ? new Date(v + "T00:00:00").toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) : "";
 
 async function api(path, body) {
   const opt = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json", "X-Requested-With": "jobsys" }, body: JSON.stringify(body) };
@@ -143,127 +326,220 @@ async function api(path, body) {
   if (!r.ok) throw new Error((j && j.error) || t || r.statusText);
   return j ?? t;
 }
-function toast(m, ms = 2600) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), ms); }
-async function copy(text) { try { await navigator.clipboard.writeText(text); toast("Copied. Paste it into your AI coding assistant."); } catch { toast("Copy failed. Select the text and copy it manually."); } }
-const isDue = r => r.follow_up && r.follow_up <= S.today && ["applied", "interview"].includes(r.status);
-function guard() { if (S.demo) { toast("Demo mode is read-only."); return false; } return true; }
+function toast(msg, o = {}) {
+  const t = document.createElement("div"); t.className = "toast " + (o.kind || "");
+  const s = document.createElement("span"); s.textContent = msg; t.append(s);
+  if (o.action) { const b = document.createElement("button"); b.textContent = o.action; b.onclick = () => { t.remove(); o.onAction && o.onAction(); }; t.append(b); }
+  $("#toasts").append(t); setTimeout(() => t.remove(), o.ms || (o.action ? 7000 : 3200));
+}
+const fail = e => toast(e.message || String(e), { kind: "err", ms: 6000 });
+async function copy(text, msg = "Copied. Paste it into your AI assistant.") { try { await navigator.clipboard.writeText(text); toast(msg); return true; } catch { toast("Copy failed. Select the text and copy it manually.", { kind: "err" }); return false; } }
+function guard() { if (S && S.demo) { toast("Demo mode is read-only."); return false; } return true; }
 
+/* ---------- popover: custom dropdown + calendar ---------- */
+const popEl = $("#pop"); let pop = null;
+function openPop(anchor, html, opts = {}) {
+  closePop(false); popEl.innerHTML = html; popEl.hidden = false; pop = { anchor, ...opts };
+  anchor.setAttribute("aria-expanded", "true"); placePop();
+}
+function placePop() {
+  if (!pop) return; const r = pop.anchor.getBoundingClientRect();
+  popEl.style.minWidth = r.width + "px"; popEl.style.left = "0px"; popEl.style.top = "0px";
+  const w = popEl.offsetWidth, h = popEl.offsetHeight;
+  const left = Math.min(Math.max(8, r.left), innerWidth - w - 8); let top = r.bottom + 6;
+  if (top + h > innerHeight - 8 && r.top - h - 6 > 8) top = r.top - h - 6;
+  popEl.style.left = left + "px"; popEl.style.top = top + "px";
+}
+function closePop(focus = true) {
+  if (!pop) return; const a = pop.anchor; a.setAttribute("aria-expanded", "false");
+  popEl.hidden = true; popEl.innerHTML = ""; popEl.onclick = null; pop = null; if (focus) a.focus();
+}
+document.addEventListener("mousedown", e => { if (pop && !popEl.contains(e.target) && !pop.anchor.contains(e.target)) closePop(false); });
+addEventListener("resize", () => closePop(false));
+addEventListener("scroll", e => { if (pop && !popEl.contains(e.target)) closePop(false); }, true);
+
+function Select({ options, value, onChange, label }) {
+  const wrap = document.createElement("div"); wrap.className = "ctl-wrap";
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "ctl";
+  btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false"); if (label) btn.setAttribute("aria-label", label);
+  wrap.append(btn);
+  const me = { el: wrap, value };
+  const labelOf = v => (options.find(o => o.value === v) || {}).label ?? "";
+  const paint = () => { const o = options.find(x => x.value === me.value); btn.innerHTML = `${o && o.dot ? `<span class="dot" style="background:${o.dot}"></span>` : ""}<span class="ctl-val">${esc(labelOf(me.value))}</span>${ic("down", 16)}`; };
+  function open() {
+    let active = Math.max(0, options.findIndex(o => o.value === me.value));
+    const html = () => `<div role="listbox">${options.map((o, i) => `<div role="option" class="opt ${i === active ? "active" : ""}" data-i="${i}" aria-selected="${o.value === me.value}">${o.dot ? `<span class="dot" style="background:${o.dot}"></span>` : ""}<span>${esc(o.label)}</span>${o.value === me.value ? ic("check", 16) : ""}</div>`).join("")}</div>`;
+    openPop(btn, html(), {
+      onKey(e) {
+        if (e.key === "Enter") { choose(active); e.preventDefault(); return true; }
+        if (e.key === "ArrowDown") active = (active + 1) % options.length;
+        else if (e.key === "ArrowUp") active = (active - 1 + options.length) % options.length;
+        else if (e.key === "Home") active = 0; else if (e.key === "End") active = options.length - 1; else return false;
+        popEl.innerHTML = html(); const a = $(".opt.active", popEl); a && a.scrollIntoView({ block: "nearest" }); e.preventDefault(); return true;
+      }
+    });
+    popEl.onclick = ev => { const o = ev.target.closest(".opt"); if (o) choose(+o.dataset.i); };
+  }
+  function choose(i) { const v = options[i].value; closePop(); if (v !== me.value) { me.value = v; paint(); onChange && onChange(v); } }
+  btn.addEventListener("click", () => (pop && pop.anchor === btn) ? closePop() : open());
+  btn.addEventListener("keydown", e => { if (!pop && (e.key === "ArrowDown" || e.key === "ArrowUp")) { e.preventDefault(); open(); } });
+  paint(); return me;
+}
+
+const pad = n => String(n).padStart(2, "0");
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseISO = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+function DatePick({ value = "", onChange, placeholder = "Select date", label }) {
+  const wrap = document.createElement("div"); wrap.className = "ctl-wrap";
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "ctl";
+  btn.setAttribute("aria-haspopup", "dialog"); btn.setAttribute("aria-expanded", "false"); if (label) btn.setAttribute("aria-label", label);
+  wrap.append(btn);
+  const me = { el: wrap, value };
+  const paint = () => { btn.innerHTML = `${ic("calendar", 16)}<span class="ctl-val ${me.value ? "" : "ph"}">${esc(me.value ? fmtDate(me.value) : placeholder)}</span>`; };
+  function cal(f, sel) {
+    const first = new Date(f.getFullYear(), f.getMonth(), 1), start = new Date(first); start.setDate(1 - first.getDay());
+    const today = iso(new Date()), fi = iso(f); let cells = "";
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i); const s = iso(d);
+      const cls = ["day", d.getMonth() !== f.getMonth() ? "out" : "", s === today ? "today" : "", s === sel ? "sel" : "", s === fi ? "focus" : ""].join(" ");
+      cells += `<button type="button" class="${cls}" data-d="${s}" tabindex="-1" aria-label="${esc(d.toDateString())}"${s === sel ? ' aria-pressed="true"' : ""}>${d.getDate()}</button>`;
+    }
+    return `<div class="cal" role="dialog" aria-label="Choose a date"><div class="cal-head"><button type="button" class="icon-btn" data-nav="-1" aria-label="Previous month">${ic("left")}</button><div class="cal-title">${esc(f.toLocaleDateString(undefined, { month: "long", year: "numeric" }))}</div><button type="button" class="icon-btn" data-nav="1" aria-label="Next month">${ic("right")}</button></div><div class="cal-week">${["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(x => `<span>${x}</span>`).join("")}</div><div class="cal-grid">${cells}</div><div class="cal-foot"><button type="button" class="link-btn" data-act="clear">Clear</button><button type="button" class="link-btn" data-act="today">Today</button></div></div>`;
+  }
+  function open() {
+    let f = me.value ? parseISO(me.value) : new Date();
+    const redraw = () => { popEl.innerHTML = cal(f, me.value); };
+    const pick = v => { closePop(); me.value = v; paint(); onChange && onChange(v); };
+    openPop(btn, cal(f, me.value), {
+      onKey(e) {
+        const mv = n => { f = new Date(f.getFullYear(), f.getMonth(), f.getDate() + n); };
+        if (e.key === "ArrowLeft") mv(-1); else if (e.key === "ArrowRight") mv(1); else if (e.key === "ArrowUp") mv(-7); else if (e.key === "ArrowDown") mv(7);
+        else if (e.key === "PageUp") f = new Date(f.getFullYear(), f.getMonth() - 1, Math.min(f.getDate(), 28));
+        else if (e.key === "PageDown") f = new Date(f.getFullYear(), f.getMonth() + 1, Math.min(f.getDate(), 28));
+        else if (e.key === "Enter") { pick(iso(f)); e.preventDefault(); return true; }
+        else return false;
+        redraw(); e.preventDefault(); return true;
+      }
+    });
+    popEl.onclick = ev => {
+      const day = ev.target.closest("[data-d]"), nav = ev.target.closest("[data-nav]"), act = ev.target.closest("[data-act]");
+      if (day) pick(day.dataset.d);
+      else if (nav) { f = new Date(f.getFullYear(), f.getMonth() + +nav.dataset.nav, 1); redraw(); }
+      else if (act) { act.dataset.act === "today" ? pick(iso(new Date())) : pick(""); }
+    };
+  }
+  btn.addEventListener("click", () => (pop && pop.anchor === btn) ? closePop() : open());
+  btn.addEventListener("keydown", e => { if (!pop && e.key === "ArrowDown") { e.preventDefault(); open(); } });
+  paint(); return me;
+}
+
+/* ---------- confirm dialog ---------- */
+let modal = null;
+function confirmDialog({ title, body, confirm = "Confirm", danger = false, icon = "alert" }) {
+  return new Promise(res => {
+    const root = $("#modal-root"), prev = document.activeElement;
+    root.innerHTML = `<div class="modal-back"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="mt" aria-describedby="mb"><div class="modal-ic ${danger ? "danger" : ""}">${ic(icon, 22)}</div><h3 id="mt">${esc(title)}</h3><p id="mb">${esc(body)}</p><div class="modal-actions"><button class="btn sec" data-r="0">Cancel</button><button class="btn ${danger ? "danger" : ""}" data-r="1">${esc(confirm)}</button></div></div></div>`;
+    const done = v => { root.innerHTML = ""; modal = null; prev && prev.focus && prev.focus(); res(v); };
+    modal = { close: done };
+    root.onclick = e => { const b = e.target.closest("[data-r]"); if (b) done(b.dataset.r === "1"); else if (e.target.classList.contains("modal-back")) done(false); };
+    $(".btn.sec", root).focus();
+  });
+}
+
+/* ---------- load + shell ---------- */
 async function load() {
   S = await api("/api/state");
   $("#modeLabel").textContent = S.demo ? "Demo (sample data)" : "Local, private";
-  const due = S.rows.filter(isDue).length;
-  const c = $("#dueCount"); c.hidden = !due; c.textContent = due;
-  render();
-  if (openIdx !== null) renderDrawer();
+  renderNav(); render(); if (openIdx !== null) renderDrawer();
 }
-function setView(v) {
-  view = v;
-  document.querySelectorAll("#nav button").forEach(b => b.setAttribute("aria-current", b.dataset.view === v ? "page" : "false"));
-  render();
+function renderNav() {
+  const due = S.rows.filter(isDue).length, tr = S.trash.length;
+  $("#nav").innerHTML = NAV.map(([v, i, l]) => `<button data-view="${v}" aria-current="${v === view ? "page" : "false"}">${ic(i, 19)}<span>${l}</span>${v === "pipeline" && due ? `<span class="badge due" title="Follow-ups due">${due}</span>` : ""}${v === "trash" && tr ? `<span class="badge">${tr}</span>` : ""}</button>`).join("");
+  $$("#nav button").forEach(b => b.onclick = () => setView(b.dataset.view));
+  $("#themeBtn").innerHTML = ic(document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme:dark)").matches) ? "sun" : "moon", 18);
 }
+async function leaveOk() {
+  const vt = $("#vText"), edDirty = editing && vt && vt.dataset.orig !== vt.value;
+  if (!(profDirty || edDirty)) return true;
+  const ok = await confirmDialog({ title: "Discard unsaved changes?", body: "You have edits that are not saved. If you leave now they will be lost.", confirm: "Discard changes", danger: true });
+  if (ok) { profDirty = false; editing = false; }
+  return ok;
+}
+async function requestClose() { if (await leaveOk()) closeDrawer(); }
+async function setView(v) { if (!(await leaveOk())) return; closeDrawer(); view = v; renderNav(); render(); scrollTo(0, 0); }
 function render() {
-  document.querySelectorAll("#nav button").forEach(b => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
-  const m = $("#main");
-  const banner = S.demo ? `<div class="banner"><b>Demo mode.</b> Fictional sample data, read-only. The real version runs privately on the owner's PC.</div>` : "";
-  m.innerHTML = banner + ({ pipeline: vPipeline, add: vAdd, profile: vProfile, tools: vTools }[view])();
-  if (view === "add") bindAdd();
-  if (view === "profile") bindProfile();
-  if (view === "tools") bindTools();
-  if (view === "pipeline") document.querySelectorAll(".card").forEach(c => c.onclick = () => openDrawer(+c.dataset.idx));
+  const banner = S.demo ? `<div class="banner">${ic("alert", 18)}<div><b>Demo mode.</b> Fictional sample data, read-only. The real version runs privately on the owner's PC.</div></div>` : "";
+  $("#main").innerHTML = banner + ({ pipeline: vPipeline, add: vAdd, profile: vProfile, trash: vTrash, tools: vTools }[view])();
+  ({ pipeline: bindPipeline, add: bindAdd, profile: bindProfile, trash: bindTrash, tools: bindTools }[view])();
 }
 
-/* ---------- views ---------- */
-function vPipeline() {
-  const n = st => S.rows.filter(r => r.status === st).length, due = S.rows.filter(isDue);
-  const stats = `<div class="stats">
-    <div class="stat"><b>${S.rows.length}</b><span>Applications</span></div>
-    <div class="stat"><b>${n("interview")}</b><span>In interview stage</span></div>
-    <div class="stat"><b>${n("offer")}</b><span>Offers</span></div>
-    <div class="stat"><b style="color:${due.length ? "var(--bad)" : "inherit"}">${due.length}</b><span>Follow-ups due</span></div>
-    <div class="stat"><b>${S.rows.length ? Math.round(100 * (n("interview") + n("offer")) / S.rows.length) + "%" : "-"}</b><span>Reached interview or offer</span></div></div>`;
-  const cols = S.statuses.map(st => {
-    const rows = S.rows.filter(r => r.status === st);
-    return `<div class="col" style="--c:var(--${st})"><h3><span>${LABEL[st]}</span><span>${rows.length}</span></h3>${rows.map(card).join("") || `<div class="empty">Nothing here</div>`}</div>`;
-  }).join("");
-  const first = S.rows.length ? "" : `<div class="panel" style="margin-bottom:18px"><b>No applications yet.</b> Go to <a href="#" onclick="setView('add');return false">Add job</a>, paste a job description, and follow the three steps.</div>`;
-  return `<h1>Pipeline</h1><p class="sub">Every application, one folder each. Click a card to open its files.</p>${first}${stats}<div class="board">${cols}</div>`;
+/* ---------- pipeline ---------- */
+function ready(r) {
+  const f = (r.folder && S.files[r.folder]) || [], has = (p, min = 0) => f.some(x => x.name === p && x.size > min);
+  return [{ k: "Analysis", ok: has("02_analysis.md", 250), step: "apply" }, { k: "CV (PDF)", ok: has("03_cv/Abir_Hasan_CV.pdf"), step: "apply" },
+          { k: "Email", ok: has("04_email/application_email.txt"), step: "apply" }, { k: "Interview prep", ok: has("05_prep/prep.md"), step: "prep" }];
 }
 function card(r) {
-  const due = isDue(r);
-  return `<button class="card" data-idx="${r.idx}"><b>${esc(r.company)}</b><small>${esc(r.role)}</small><br>
-    <small>Applied ${esc(r.applied)}</small>
-    ${r.follow_up ? `<br><span class="pill ${due ? "due" : ""}">${due ? "Follow up now" : "Follow up " + esc(r.follow_up)}</span>` : ""}
-    ${r.note ? `<br><small>${esc(r.note)}</small>` : ""}</button>`;
+  const due = isDue(r), soon = isSoon(r), rd = ready(r);
+  return `<article class="card" tabindex="0" role="button" draggable="${S.demo ? "false" : "true"}" data-idx="${r.idx}" aria-label="${esc(r.company)}, ${esc(r.role)}">
+    <div class="card-top"><span class="avatar" style="--h:${hue(r.company)}">${esc(initials(r.company))}</span><div style="min-width:0"><b>${esc(r.company)}</b><small>${esc(r.role)}</small></div></div>
+    <div class="meta"><span class="pill">${ic("clock", 12)} ${esc(fmtDate(r.applied))}</span>${r.follow_up ? `<span class="pill ${due ? "due" : soon ? "soon" : ""}">${ic("bell", 12)} ${due ? "Follow up now" : "Follow up " + esc(fmtDate(r.follow_up))}</span>` : ""}</div>
+    ${r.note ? `<div class="note">${esc(r.note)}</div>` : ""}
+    <div class="prog" title="${rd.map(x => x.k + (x.ok ? ": done" : ": todo")).join(", ")}">${rd.map(x => `<i class="${x.ok ? "on" : ""}"></i>`).join("")}</div></article>`;
 }
-function vAdd() {
-  return `<h1>Add a job</h1><p class="sub">Paste the job description. This creates the job's folder; your AI assistant then writes the CV, analysis and email.</p>
-  <div class="panel"><form id="addForm">
-    <div class="row"><div><label for="company">Company</label><input id="company" required placeholder="e.g. BSD"></div>
-    <div><label for="role">Role</label><input id="role" required placeholder="e.g. Junior Software Engineer"></div></div>
-    <div class="row"><div><label for="url">Job link</label><input id="url" type="url" placeholder="https://..."></div>
-    <div><label for="source">Source</label><select id="source"><option>LinkedIn</option><option>Bdjobs</option><option>Company site</option><option>Email</option><option>Referral</option><option>Other</option></select></div></div>
-    <label for="deadline">Deadline (optional)</label><input id="deadline" type="date" style="max-width:220px">
-    <label for="jd">Job description</label><textarea id="jd" placeholder="Paste the full job description here"></textarea>
-    <div class="btns"><button class="btn" id="addBtn">Create job folder</button></div>
-    <div class="hint">Only saved on this computer in the jobs folder. Nothing is sent anywhere.</div>
-  </form><div id="addResult"></div></div>`;
+function vPipeline() {
+  const todo = !S.demo && S.todos > 0 ? `<div class="banner" style="background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)">${ic("user", 18)}<div style="flex:1"><b>Your profile has ${S.todos} unfinished item${S.todos > 1 ? "s" : ""}.</b> Better CVs and interview prep start there.</div><button class="btn sm" id="todoBtn">Open Profile</button></div>` : "";
+  return todo + `<div class="page-head"><div class="grow"><h1>Pipeline</h1><p class="sub">Every application in one place. Drag a card to change its stage, or click it to open its files.</p></div>
+    <div class="search">${ic("search", 16)}<input class="input" id="q" type="search" placeholder="Search company or role" value="${esc(q)}" aria-label="Search applications"><span class="kbd" aria-hidden="true">/</span></div>
+    <button class="btn" id="newBtn">${ic("plus", 16)} New job</button></div>
+    <div id="stats"></div><div id="boardWrap"></div>`;
 }
-function bindAdd() {
-  $("#addForm").onsubmit = async e => {
-    e.preventDefault(); if (!guard()) return;
-    const b = $("#addBtn"); b.disabled = true; b.textContent = "Creating...";
-    try {
-      const body = Object.fromEntries(["company", "role", "url", "source", "deadline", "jd"].map(k => [k, $("#" + k).value]));
-      const r = await api("/api/add", body);
-      await load();
-      const row = S.rows.find(x => (x.folder || "") === r.folder);
-      $("#addResult").innerHTML = `<hr style="border:0;border-top:1px solid var(--border);margin:20px 0"><b>Folder created:</b> <code>${esc(r.folder)}</code>
-        <ol class="steps"><li>Open this project folder in your AI coding assistant.</li>
-        <li>Paste this prompt:<div class="promptbox">${esc(prompts(r.folder).apply)}</div><div class="btns"><button class="btn" id="cp">Copy prompt</button>${row ? `<button class="btn sec" id="op">Open job</button>` : ""}</div></li>
-        <li>Review the CV PDF and the email in the job's folder, then send the email yourself.</li></ol>`;
-      $("#cp").onclick = () => copy(prompts(r.folder).apply);
-      if (row) $("#op").onclick = () => openDrawer(row.idx);
-    } catch (err) { toast("Error: " + err.message, 6000); b.disabled = false; b.textContent = "Create job folder"; }
-  };
+function bindPipeline() {
+  if ($("#todoBtn")) $("#todoBtn").onclick = () => setView("profile");
+  $("#newBtn").onclick = () => setView("add");
+  $("#q").oninput = e => { q = e.target.value; drawBoard(); };
+  drawBoard();
 }
-function vProfile() {
-  return `<h1>Profile</h1><p class="sub">The source of truth for every CV and answer. Fill the <span class="todo">TODO</span> lines: this is what makes the output good.</p>
-  <div class="panel" style="max-width:1000px"><div class="btns" style="margin:0 0 10px">${S.profile.map((p, i) => `<button class="btn ${i ? "sec" : ""}" data-p="${p}">${esc(p.split("/").pop())}</button>`).join("")}</div>
-  <textarea id="pText" style="min-height:460px" spellcheck="false"></textarea>
-  <div class="btns"><button class="btn" id="pSave">Save</button><span class="hint" id="pInfo" style="align-self:center"></span></div></div>`;
+function drawBoard() {
+  const n = st => S.rows.filter(r => r.status === st).length, due = S.rows.filter(isDue).length;
+  $("#stats").innerHTML = `<div class="stats">
+    <div class="stat"><span class="si">${ic("briefcase", 18)}</span><div><b>${S.rows.length}</b><span class="l">Applications</span></div></div>
+    <div class="stat"><span class="si">${ic("user", 18)}</span><div><b>${n("interview")}</b><span class="l">In interview stage</span></div></div>
+    <div class="stat"><span class="si">${ic("check", 18)}</span><div><b>${n("offer")}</b><span class="l">Offers</span></div></div>
+    <div class="stat ${due ? "warn" : ""}"><span class="si">${ic("bell", 18)}</span><div><b>${due}</b><span class="l">Follow-ups due</span></div></div>
+    <div class="stat"><span class="si">${ic("chart", 18)}</span><div><b>${S.rows.length ? Math.round(100 * (n("interview") + n("offer")) / S.rows.length) + "%" : "-"}</b><span class="l">Reached interview or offer</span></div></div></div>`;
+  if (!S.rows.length) {
+    $("#boardWrap").innerHTML = `<div class="empty-state"><div class="eic">${ic("inbox", 26)}</div><h3>No applications yet</h3><p>Add your first job, paste the description, and your AI assistant will prepare the CV, analysis and email.</p><button class="btn" id="firstBtn">${ic("plus", 16)} Add your first job</button></div>`;
+    $("#firstBtn").onclick = () => setView("add"); return;
+  }
+  const ql = q.trim().toLowerCase(), match = r => !ql || `${r.company} ${r.role} ${r.note}`.toLowerCase().includes(ql);
+  $("#boardWrap").innerHTML = `<div class="board">${S.statuses.map(st => {
+    const rows = S.rows.filter(r => r.status === st && match(r)).sort((a, b) => (b.applied || "").localeCompare(a.applied || ""));
+    return `<div class="col" data-st="${st}" style="--c:var(--${st})"><h3><i></i><span>${LABEL[st]}</span><span class="cnt">${rows.length}</span></h3>${rows.map(card).join("") || `<div class="empty">${ql ? "No match" : "Nothing here"}</div>`}</div>`;
+  }).join("")}</div>`;
+  $$(".card").forEach(c => {
+    c.onclick = () => openDrawer(+c.dataset.idx);
+    c.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDrawer(+c.dataset.idx); } };
+    c.ondragstart = e => { e.dataTransfer.setData("text/plain", c.dataset.idx); e.dataTransfer.effectAllowed = "move"; c.classList.add("dragging"); };
+    c.ondragend = () => { c.classList.remove("dragging"); $$(".col.over").forEach(x => x.classList.remove("over")); };
+  });
+  $$(".col").forEach(col => {
+    col.ondragover = e => { e.preventDefault(); col.classList.add("over"); };
+    col.ondragleave = e => { if (!col.contains(e.relatedTarget)) col.classList.remove("over"); };
+    col.ondrop = async e => {
+      e.preventDefault(); col.classList.remove("over");
+      const r = S.rows[+e.dataTransfer.getData("text/plain")]; if (!r || r.status === col.dataset.st) return;
+      await setStatus(r, col.dataset.st);
+    };
+  });
 }
-function bindProfile() {
-  let cur = S.profile[0];
-  const loadP = async p => {
-    cur = p; const t = await fetch("/api/file?path=" + encodeURIComponent(p)).then(r => r.text());
-    $("#pText").value = t; const n = (t.match(/TODO/g) || []).length;
-    $("#pInfo").textContent = n ? `${n} TODO item${n > 1 ? "s" : ""} left to fill` : "No TODO items left";
-    document.querySelectorAll("[data-p]").forEach(b => b.classList.toggle("sec", b.dataset.p !== p));
-  };
-  document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => loadP(b.dataset.p));
-  $("#pSave").onclick = async () => { if (!guard()) return; try { await api("/api/save", { path: cur, content: $("#pText").value }); toast("Saved"); loadP(cur); } catch (e) { toast("Error: " + e.message, 5000); } };
-  if (cur) loadP(cur);
-}
-function vTools() {
-  return `<h1>Tools &amp; help</h1><p class="sub">How the system works, and small helpers.</p>
-  <div class="panel"><h3 style="margin-top:0">The workflow</h3><ol class="steps">
-    <li><b>Add job</b> here (paste the description). A folder with the standard layout is created.</li>
-    <li><b>Apply:</b> paste the copied prompt into your AI coding assistant, opened in this project folder. It writes the fit analysis, the tailored CV (PDF) and the email into the job folder.</li>
-    <li><b>Review and send</b> the email yourself. Nothing is ever sent automatically.</li>
-    <li><b>Interview call?</b> Open the job and copy the Prep prompt. Then use Mock for practice and Follow-up after.</li>
-    <li>Update the <b>status</b> on the card as things move.</li></ol>
-    <h3>Check live demo links</h3><p class="hint">Free hosts sleep. Wake your project links before an interview. Takes up to a few minutes.</p>
-    <div class="btns" style="margin-top:6px"><button class="btn" id="lnk">Check links now</button></div><div class="out" id="lnkOut" hidden></div></div>`;
-}
-function bindTools() {
-  $("#lnk").onclick = async () => {
-    if (!guard()) return; const b = $("#lnk"), o = $("#lnkOut"); b.disabled = true; b.textContent = "Checking..."; o.hidden = false; o.textContent = "Working. Slow sites can take up to 90 seconds each...";
-    try { o.textContent = (await api("/api/links", {})).output; } catch (e) { o.textContent = e.message; }
-    b.disabled = false; b.textContent = "Check links now";
-  };
+async function setStatus(r, st) {
+  if (!guard()) return;
+  try { await api("/api/update", { idx: r.idx, status: st }); await load(); toast(`${r.company} moved to ${LABEL[st]}`); } catch (e) { fail(e); }
 }
 
-/* ---------- prompts ---------- */
+/* ---------- add job ---------- */
+const SOURCES = ["LinkedIn", "Bdjobs", "Company site", "Email", "Referral", "Other"].map(x => ({ value: x, label: x }));
 function prompts(folder, row) {
   const n = row ? `${row.company}, ${row.role}` : folder;
   return {
@@ -273,90 +549,226 @@ function prompts(folder, row) {
     followup: s => `Use workflows/followup.md. Job folder: ${folder}. Situation: ${s}`
   };
 }
+function vAdd() {
+  return `<div class="page-head"><div class="grow"><h1>Add a job</h1><p class="sub">Paste the job description. This creates the job's folder; your AI assistant then writes the CV, analysis and email.</p></div></div>
+  <div class="grid-2"><div class="panel" id="addPanel"><form id="addForm" novalidate>
+    <div class="row"><div class="field" data-f="company"><label class="lbl" for="company">Company</label><input class="input" id="company" placeholder="e.g. BSD" autocomplete="off"><div class="err">Enter the company name.</div></div>
+    <div class="field" data-f="role"><label class="lbl" for="role">Role</label><input class="input" id="role" placeholder="e.g. Junior Software Engineer" autocomplete="off"><div class="err">Enter the role.</div></div></div>
+    <div class="row"><div class="field"><label class="lbl" for="url">Job link</label><input class="input" id="url" type="url" placeholder="https://..." autocomplete="off"></div>
+    <div class="field"><span class="lbl">Source</span><div id="srcMount"></div></div></div>
+    <div class="field" style="max-width:260px"><span class="lbl">Deadline (optional)</span><div id="dlMount"></div></div>
+    <div class="field" data-f="jd"><div style="display:flex;align-items:center;margin-bottom:6px"><label class="lbl" for="jd" style="margin:0;flex:1">Job description</label><button type="button" class="btn ghost sm" id="pasteBtn">${ic("clip", 14)} Paste from clipboard</button></div>
+      <textarea class="input" id="jd" placeholder="Paste the full job description here"></textarea><div class="err">Paste the job description so the assistant can analyse it.</div><div class="hint" id="jdCount">0 characters</div></div>
+    <div class="btns"><button class="btn" id="addBtn" type="submit">${ic("folder", 16)} Create job folder</button></div>
+    <div class="hint" style="margin-top:10px">Saved only on this computer, in the jobs folder. Nothing is sent anywhere.</div>
+  </form><div id="addResult"></div></div>
+  <div class="panel"><h3 style="margin-bottom:6px">What happens next</h3><ol class="steps">
+    <li><b>Create the folder.</b> The job post is saved and a card appears under Applied.</li>
+    <li><b>Copy the prompt</b> and paste it into your AI assistant, opened in this project folder.</li>
+    <li><b>Review the results:</b> fit analysis, tailored CV PDF, email. Send the email yourself.</li></ol></div></div>`;
+}
+function bindAdd() {
+  const src = Select({ options: SOURCES, value: "LinkedIn", label: "Source" }), dl = DatePick({ placeholder: "No deadline", label: "Deadline" });
+  $("#srcMount").append(src.el); $("#dlMount").append(dl.el);
+  $("#jd").oninput = e => { $("#jdCount").textContent = `${e.target.value.length.toLocaleString()} characters`; };
+  $("#pasteBtn").onclick = async () => { try { const t = await navigator.clipboard.readText(); $("#jd").value = t; $("#jd").dispatchEvent(new Event("input")); } catch { toast("Clipboard access was blocked. Paste with Ctrl+V instead.", { kind: "err" }); } };
+  ["company", "role", "jd"].forEach(id => $("#" + id).addEventListener("input", () => $(`[data-f="${id}"]`).classList.remove("invalid")));
+  $("#addForm").onsubmit = async e => {
+    e.preventDefault(); if (!guard()) return;
+    const bad = ["company", "role", "jd"].filter(id => !$("#" + id).value.trim());
+    ["company", "role", "jd"].forEach(id => $(`[data-f="${id}"]`).classList.toggle("invalid", bad.includes(id)));
+    if (bad.length) { $("#" + bad[0]).focus(); return; }
+    const b = $("#addBtn"); b.disabled = true; b.innerHTML = "Creating...";
+    try {
+      const body = { company: $("#company").value, role: $("#role").value, url: $("#url").value, source: src.value, deadline: dl.value, jd: $("#jd").value };
+      const r = await api("/api/add", body); await load();
+      const row = S.rows.find(x => (x.folder || "") === r.folder), p = prompts(r.folder, row).apply;
+      const copied = await navigator.clipboard.writeText(p).then(() => true, () => false);
+      $("#addForm").hidden = true;
+      $("#addResult").innerHTML = `<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px"><span class="modal-ic" style="margin:0;background:var(--ok);color:#fff">${ic("check", 22)}</span><div><h3>Job folder created</h3><div class="hint"><code>${esc(r.folder)}</code></div></div></div>
+        <ol class="steps"><li>${copied ? "The prompt is <b>already copied</b>. " : ""}Open this project folder in your AI assistant and paste it:<div class="promptbox">${esc(p)}</div><div class="btns"><button class="btn" id="cp">${ic("copy", 16)} Copy prompt again</button>${row ? `<button class="btn sec" id="op">${ic("folder", 16)} Open job</button>` : ""}<button class="btn ghost" id="again">${ic("plus", 16)} Add another</button></div></li>
+        <li>When the assistant finishes, open the job card to read the analysis, CV PDF and email.</li><li>Review everything and send the email yourself.</li></ol>`;
+      $("#cp").onclick = () => copy(p); $("#again").onclick = () => render();
+      if (row) $("#op").onclick = () => { setView("pipeline"); openDrawer(row.idx); };
+    } catch (err) { fail(err); b.disabled = false; b.innerHTML = `${ic("folder", 16)} Create job folder`; }
+  };
+}
+
+/* ---------- profile ---------- */
+function vProfile() {
+  return `<div class="page-head"><div class="grow"><h1>Profile</h1><p class="sub">The source of truth for every CV and answer. Fill the <span class="todo">TODO</span> and <span class="todo">[FILL IN]</span> lines: this is what makes the output good.</p></div></div>
+  <div class="panel" style="max-width:1040px"><div class="tabs" role="tablist" id="pTabs">${S.profile.map((p, i) => `<button class="tab" role="tab" data-p="${esc(p)}" aria-selected="${i === 0}">${esc(p.split("/").pop())}</button>`).join("")}</div>
+  <textarea class="input" id="pText" style="min-height:480px" spellcheck="false" aria-label="Profile editor"></textarea>
+  <div class="btns" style="margin-top:12px;align-items:center"><button class="btn" id="pSave">Save</button><button class="btn sec" id="pNext" type="button">Jump to next item to fill</button><span class="hint" id="pInfo"></span></div></div>`;
+}
+function bindProfile() {
+  let cur = S.profile[0], dirty = false; profDirty = false;
+  const info = t => { const n = (t.match(/TODO|\[FILL IN/g) || []).length; $("#pInfo").textContent = (dirty ? "Unsaved changes. " : "") + (n ? `${n} item${n > 1 ? "s" : ""} left to fill` : "Nothing left to fill"); };
+  const loadP = async p => { if (!(await leaveOk())) return; cur = p; dirty = false; profDirty = false; const t = await fetch("/api/file?path=" + encodeURIComponent(p)).then(r => r.text()); $("#pText").value = t; info(t); $$("#pTabs .tab").forEach(b => b.setAttribute("aria-selected", b.dataset.p === p)); };
+  $$("#pTabs .tab").forEach(b => b.onclick = () => loadP(b.dataset.p));
+  $("#pText").oninput = e => { dirty = true; profDirty = true; info(e.target.value); };
+  const save = async () => { if (!guard()) return; try { await api("/api/save", { path: cur, content: $("#pText").value }); dirty = false; profDirty = false; info($("#pText").value); toast("Saved"); } catch (e) { fail(e); } };
+  $("#pNext").onclick = () => {
+    const ta = $("#pText"), re = /TODO|\[FILL IN[^\]]*\]/g; re.lastIndex = ta.selectionEnd || 0;
+    let m = re.exec(ta.value); if (!m) { re.lastIndex = 0; m = re.exec(ta.value); }
+    if (!m) { toast("Nothing left to fill."); return; }
+    const line = ta.value.slice(0, m.index).split("\n").length, lh = parseFloat(getComputedStyle(ta).lineHeight) || 20;
+    ta.focus(); ta.setSelectionRange(m.index, m.index + m[0].length); ta.scrollTop = Math.max(0, (line - 4) * lh);
+  };
+  $("#pSave").onclick = save; $("#pText").onkeydown = e => { if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); save(); } };
+  if (cur) loadP(cur);
+}
+
+/* ---------- trash ---------- */
+function vTrash() {
+  const t = S.trash;
+  return `<div class="page-head"><div class="grow"><h1>Trash</h1><p class="sub">Deleted jobs wait here. Restore one to bring it back, or delete it permanently. Permanent deletion cannot be undone.</p></div>${t.length ? `<button class="btn danger" id="emptyBtn">${ic("trash", 16)} Empty trash</button>` : ""}</div>
+  ${t.length ? `<div class="panel" style="max-width:860px">${t.map(x => `<div class="list-row"><span class="avatar" style="--h:${hue(x.company)}">${esc(initials(x.company))}</span><div class="grow"><b>${esc(x.company)}</b><div class="hint">${esc(x.role)}${x.deleted ? " · deleted " + esc(x.deleted) : ""} · ${x.files} file${x.files === 1 ? "" : "s"}</div></div>
+    <button class="btn sec sm" data-restore="${esc(x.name)}">${ic("undo", 14)} Restore</button><button class="btn ghost sm" data-purge="${esc(x.name)}" style="color:var(--bad)">${ic("trash", 14)} Delete forever</button></div>`).join("")}</div>`
+    : `<div class="empty-state"><div class="eic">${ic("trash", 26)}</div><h3>Trash is empty</h3><p>Jobs you delete will appear here, so nothing is lost by accident.</p></div>`}`;
+}
+function bindTrash() {
+  $$("[data-restore]").forEach(b => b.onclick = async () => { if (!guard()) return; try { await api("/api/restore", { name: b.dataset.restore }); await load(); toast("Job restored"); } catch (e) { fail(e); } });
+  $$("[data-purge]").forEach(b => b.onclick = async () => {
+    if (!guard()) return; const x = S.trash.find(t => t.name === b.dataset.purge);
+    if (!await confirmDialog({ title: `Permanently delete ${x.company}?`, body: `This deletes the job folder and all ${x.files} file${x.files === 1 ? "" : "s"} in it for good. This cannot be undone.`, confirm: "Delete forever", danger: true })) return;
+    try { await api("/api/purge", { name: x.name }); await load(); toast("Deleted permanently"); } catch (e) { fail(e); }
+  });
+  const eb = $("#emptyBtn");
+  if (eb) eb.onclick = async () => {
+    if (!guard()) return;
+    if (!await confirmDialog({ title: "Empty the trash?", body: `This permanently deletes ${S.trash.length} job${S.trash.length === 1 ? "" : "s"} and all their files. This cannot be undone.`, confirm: "Empty trash", danger: true })) return;
+    try { for (const x of S.trash) await api("/api/purge", { name: x.name }); await load(); toast("Trash emptied"); } catch (e) { fail(e); }
+  };
+}
+
+/* ---------- tools ---------- */
+function vTools() {
+  return `<div class="page-head"><div class="grow"><h1>Tools &amp; help</h1><p class="sub">How the system works, and small helpers.</p></div></div>
+  <div class="grid-2"><div class="panel"><h3 style="margin-bottom:6px">The workflow</h3><ol class="steps">
+    <li><b>Add job</b> and paste the description. A folder with the standard layout is created.</li>
+    <li><b>Apply:</b> paste the copied prompt into your AI assistant, opened in this project folder. It writes the fit analysis, the tailored CV (PDF) and the email.</li>
+    <li><b>Review and send</b> the email yourself. Nothing is ever sent automatically.</li>
+    <li><b>Interview call?</b> Open the job and copy the Prep prompt. Use Mock to practise and Follow-up afterwards.</li>
+    <li>Move the card across the board as things progress.</li></ol></div>
+  <div style="display:flex;flex-direction:column;gap:18px"><div class="panel"><h3 style="margin-bottom:4px">Check live demo links</h3><p class="hint" style="margin:0 0 10px">Free hosts sleep. Wake your project links before an interview. Can take a few minutes.</p><button class="btn" id="lnk">${ic("refresh", 16)} Check links now</button><div class="out" id="lnkOut" hidden></div></div>
+  <div class="panel"><h3 style="margin-bottom:8px">Keyboard shortcuts</h3><div class="hint" style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px"><span class="kbd" style="position:static;transform:none">/</span><span>Search the pipeline</span><span class="kbd" style="position:static;transform:none">N</span><span>New job</span><span class="kbd" style="position:static;transform:none">Esc</span><span>Close panels and menus</span><span class="kbd" style="position:static;transform:none">Ctrl+S</span><span>Save in the editor</span></div></div></div></div>`;
+}
+function bindTools() {
+  $("#lnk").onclick = async () => {
+    if (!guard()) return; const b = $("#lnk"), o = $("#lnkOut"); b.disabled = true; o.hidden = false; o.textContent = "Working. Slow sites can take up to 90 seconds each...";
+    try { o.textContent = (await api("/api/links", {})).output; } catch (e) { o.textContent = e.message; } b.disabled = false;
+  };
+}
 
 /* ---------- drawer ---------- */
 function openDrawer(idx) { openIdx = idx; curFile = null; editing = false; $("#scrim").classList.add("open"); const d = $("#drawer"); d.classList.add("open"); d.setAttribute("aria-hidden", "false"); renderDrawer(); }
-function closeDrawer() { openIdx = null; $("#scrim").classList.remove("open"); const d = $("#drawer"); d.classList.remove("open"); d.setAttribute("aria-hidden", "true"); }
+function closeDrawer() { editing = false; openIdx = null; $("#scrim").classList.remove("open"); const d = $("#drawer"); d.classList.remove("open"); d.setAttribute("aria-hidden", "true"); }
 function fileTree(files) {
-  let g = "", out = "";
   const rank = f => (f.name.includes("/") ? 1 : 0) + (f.name === "README.md" ? -1 : 0);
   files = files.slice().sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  let g = "", out = "";
   for (const f of files) {
     const parts = f.name.split("/"), grp = parts.length > 1 ? parts[0] : "Overview";
-    if (grp !== g) { g = grp; out += `<li class="grp">${esc(grp)}</li>`; }
-    out += `<li><button data-f="${esc(f.path)}" aria-current="${f.path === curFile}">${esc(parts[parts.length - 1])}</button></li>`;
+    if (grp !== g) { g = grp; out += `<li class="grp">${ic("folder", 12)} ${esc(grp)}</li>`; }
+    out += `<li><button data-f="${esc(f.path)}" aria-current="${f.path === curFile}">${ic(f.name.endsWith(".pdf") ? "pdf" : "file", 15)}<span>${esc(parts[parts.length - 1])}</span></button></li>`;
   }
   return out;
 }
+function nextStep(r, rd, P) {
+  if (!rd[0].ok || !rd[1].ok || !rd[2].ok) return { t: "Generate the application pack", d: "Copy the prompt and paste it into your AI assistant. It writes the analysis, CV PDF and email into this folder.", b: "Copy apply prompt", p: P.apply };
+  if (isDue(r)) return { t: "Follow up now", d: "This application has had no reply since the follow-up date.", b: "Copy follow-up prompt", p: P.followup("no reply after a week") };
+  if (r.status === "interview" && !rd[3].ok) return { t: "Prepare for the interview", d: "Get a company-specific guide with likely questions and answers.", b: "Copy prep prompt", p: P.prep };
+  if (r.status === "interview") return { t: "Practise with a mock interview", d: "A realistic round with scored feedback.", b: "Copy mock prompt", p: P.mock };
+  if (r.status === "applied") return { t: "Send your application", d: "Review the CV and email, send the email yourself, then wait. You will be reminded to follow up.", b: null };
+  if (r.status === "offer") return { t: "Compare and respond", d: "Review the offer terms; ask for a follow-up prompt if you want help negotiating.", b: "Copy offer prompt", p: P.followup("I received an offer") };
+  return null;
+}
 function renderDrawer() {
   const r = S.rows[openIdx]; if (!r) return closeDrawer();
-  const files = r.folder ? (S.files[r.folder] || []) : [];
-  const P = prompts(r.folder || "(no folder)", r);
+  const keep = $(".d-side") ? { side: $(".d-side").scrollTop, main: $(".d-main").scrollTop } : null;
+  const files = r.folder ? (S.files[r.folder] || []) : [], P = prompts(r.folder || "(no folder)", r), rd = ready(r), nx = nextStep(r, rd, P);
+  const stOpts = S.statuses.map(s => ({ value: s, label: LABEL[s], dot: `var(--${s})` }));
+  const fuOpts = ["no reply after a week", "interview finished, write thank-you", "I received an offer", "I was rejected"].map(x => ({ value: x, label: x }));
   $("#drawer").innerHTML = `
-  <div class="d-head"><div style="flex:1"><h2>${esc(r.company)}</h2><div class="sub" style="margin:0">${esc(r.role)} &middot; applied ${esc(r.applied)}</div></div>
-    <button class="btn sec" id="dClose" aria-label="Close">Close</button></div>
-  <div class="d-body">
-    <div class="d-side">
-      <label for="dStatus" style="margin-top:0">Status</label>
-      <select id="dStatus">${S.statuses.map(s => `<option value="${s}" ${s === r.status ? "selected" : ""}>${LABEL[s]}</option>`).join("")}</select>
-      <label for="dFollow">Follow-up date</label><input type="date" id="dFollow" value="${esc(r.follow_up)}">
-      <label for="dNote">Note</label><input id="dNote" value="${esc(r.note)}" placeholder="e.g. interview Sat 10:30">
-      ${r.url ? `<div class="hint" style="margin-top:10px"><a href="${esc(r.url)}" target="_blank" rel="noopener">Job post</a></div>` : ""}
-      <label>Ask your AI assistant (copy a prompt)</label>
-      <div class="btns" style="margin-top:4px"><button class="btn sec" data-pr="apply">Apply</button><button class="btn sec" data-pr="prep">Prep</button><button class="btn sec" data-pr="mock">Mock</button></div>
-      <select id="fuSel" style="margin-top:8px"><option>no reply after a week</option><option>interview finished, write thank-you</option><option>I received an offer</option><option>I was rejected</option></select>
-      <div class="btns" style="margin-top:6px"><button class="btn sec" data-pr="followup">Follow-up</button></div>
-      ${r.folder ? `<div class="btns"><button class="btn sec" id="dBuild">Rebuild CV</button><button class="btn sec" id="dOpen">Open folder</button></div>` : ""}
-      <div class="out" id="dOut" hidden></div>
-      <label>Files</label>
-      ${r.folder && r.exists ? `<ul class="files" id="fileList">${fileTree(files)}</ul>` : `<div class="hint">No folder yet. Use Add job to create one.</div>`}
-    </div>
-    <div class="d-main"><div class="viewer md" id="viewer"><div class="empty">Select a file on the left. Start with README.md.</div></div></div>
-  </div>`;
-  $("#dClose").onclick = closeDrawer;
-  const upd = async body => { if (!guard()) return load(); try { await api("/api/update", { idx: r.idx, ...body }); await load(); } catch (e) { toast("Error: " + e.message, 5000); } };
-  $("#dStatus").onchange = e => upd({ status: e.target.value });
-  $("#dFollow").onchange = e => upd({ follow_up: e.target.value });
-  $("#dNote").onchange = e => upd({ note: e.target.value });
-  document.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => {
-    const k = b.dataset.pr; copy(k === "followup" ? P.followup($("#fuSel").value) : P[k]);
-  });
-  document.querySelectorAll("#fileList [data-f]").forEach(b => b.onclick = () => showFile(b.dataset.f));
-  if (r.folder && $("#dOpen")) {
-    $("#dOpen").onclick = async () => { if (guard()) try { await api("/api/open", { path: r.folder }); } catch (e) { toast(e.message); } };
-    $("#dBuild").onclick = async () => {
-      if (!guard()) return; const b = $("#dBuild"), o = $("#dOut"); b.disabled = true; b.textContent = "Building..."; o.hidden = false; o.textContent = "Exporting through Word...";
-      try { const x = await api("/api/build", { folder: r.folder }); o.textContent = x.output; } catch (e) { o.textContent = e.message; }
-      b.disabled = false; b.textContent = "Rebuild CV"; load();
-    };
-  }
-  if (curFile) showFile(curFile); else if (files.find(f => f.name === "README.md")) showFile(files.find(f => f.name === "README.md").path);
+  <div class="d-head"><span class="avatar" style="--h:${hue(r.company)};width:42px;height:42px;font-size:15px">${esc(initials(r.company))}</span>
+    <div style="flex:1;min-width:0"><h2>${esc(r.company)}</h2><div class="sub">${esc(r.role)} · applied ${esc(fmtDate(r.applied))} <span class="pill status" style="--c:var(--${r.status});margin-left:6px">${LABEL[r.status]}</span></div></div>
+    <button class="icon-btn" id="dEdit" aria-label="Edit company, role and link" title="Edit company, role and link">${ic("edit", 18)}</button>
+    ${r.url ? `<a class="icon-btn" href="${esc(r.url)}" target="_blank" rel="noopener" aria-label="Open job post" title="Open job post">${ic("link", 18)}</a>` : ""}
+    ${r.folder ? `<button class="icon-btn" id="dOpen" aria-label="Open folder in Explorer" title="Open folder">${ic("folder", 18)}</button>` : ""}
+    <button class="icon-btn danger" id="dDel" aria-label="Delete job" title="Delete job">${ic("trash", 18)}</button>
+    <button class="icon-btn" id="dClose" aria-label="Close" title="Close (Esc)">${ic("x", 18)}</button></div>
+  <div class="d-body"><div class="d-side">
+    ${nx ? `<div class="next"><b>${esc(nx.t)}</b><p>${esc(nx.d)}</p>${nx.b ? `<button class="btn sm" id="nxBtn">${ic("copy", 14)} ${esc(nx.b)}</button>` : ""}</div>` : ""}
+    <div><h4 class="sec-title">Progress</h4>${rd.map(x => `<div class="check ${x.ok ? "ok" : ""}"><span class="ci">${x.ok ? ic("check", 12) : ""}</span>${esc(x.k)}</div>`).join("")}</div>
+    <div><h4 class="sec-title">Details</h4>
+      <div class="field"><span class="lbl">Stage</span><div id="mStatus"></div></div>
+      <div class="field"><span class="lbl">Follow-up date</span><div id="mFollow"></div></div>
+      <div class="field" style="margin:0"><label class="lbl" for="dNote">Note</label><input class="input" id="dNote" value="${esc(r.note)}" placeholder="e.g. interview Sat 10:30"></div></div>
+    <div><h4 class="sec-title">Ask your AI assistant</h4><div class="btns"><button class="btn sec sm" data-pr="apply" title="Copies a prompt: analysis, tailored CV PDF, email">Apply</button><button class="btn sec sm" data-pr="prep" title="Copies a prompt: company research and interview prep guide">Prep</button><button class="btn sec sm" data-pr="mock" title="Copies a prompt: mock interview with scored feedback">Mock</button></div>
+      <div id="mFu" style="margin-top:10px"></div><div class="btns" style="margin-top:8px"><button class="btn sec sm" data-pr="followup" title="Copies a prompt for the situation chosen above">Follow-up</button>${files.some(f => f.name === "03_cv/cv_spec.json") ? `<button class="btn sec sm" id="dBuild" title="Rebuild the CV PDF from cv_spec.json using Word">${ic("refresh", 14)} Rebuild CV</button>` : ""}</div><div class="out" id="dOut" hidden></div></div>
+    <div><h4 class="sec-title">Files</h4>${r.folder && r.exists ? `<ul class="files" id="fileList">${fileTree(files)}</ul>` : `<div class="hint">No folder yet. Use Add job to create one.</div>`}</div>
+  </div><div class="d-main"><div class="viewer md" id="viewer"><div class="empty">Select a file on the left. Start with README.md.</div></div></div></div>`;
+  const stSel = Select({ options: stOpts, value: r.status, label: "Stage", onChange: v => upd({ status: v }) }); $("#mStatus").append(stSel.el);
+  const fuDate = DatePick({ value: r.follow_up, placeholder: "No follow-up date", label: "Follow-up date", onChange: v => upd({ follow_up: v }) }); $("#mFollow").append(fuDate.el);
+  const fuSel = Select({ options: fuOpts, value: fuOpts[0].value, label: "Follow-up situation" }); $("#mFu").append(fuSel.el);
+  const upd = async body => { if (!guard()) return load(); try { await api("/api/update", { idx: r.idx, ...body }); await load(); if (body.status) toast(`${r.company} moved to ${LABEL[body.status]}`); } catch (e) { fail(e); } };
+  $("#dClose").onclick = requestClose; $("#dEdit").onclick = () => editDetails(r); $("#dNote").onchange = e => upd({ note: e.target.value });
+  if ($("#nxBtn")) $("#nxBtn").onclick = () => copy(nx.p);
+  $$("[data-pr]").forEach(b => b.onclick = () => { const k = b.dataset.pr; copy(k === "followup" ? P.followup(fuSel.value) : P[k]); });
+  $$("#fileList [data-f]").forEach(b => b.onclick = async () => { if (await leaveOk()) showFile(b.dataset.f); });
+  if ($("#dOpen")) $("#dOpen").onclick = async () => { if (guard()) try { await api("/api/open", { path: r.folder }); } catch (e) { fail(e); } };
+  $("#dDel").onclick = async () => {
+    if (!guard()) return;
+    if (!await confirmDialog({ title: `Move ${r.company} to trash?`, body: `This removes the job from your pipeline and moves its folder (job post, CV, emails, prep notes) to the Trash. You can restore it from there.`, confirm: "Move to trash", danger: true, icon: "trash" })) return;
+    try { const x = await api("/api/delete", { idx: r.idx }); closeDrawer(); await load(); toast(`${r.company} moved to trash`, { action: "Undo", onAction: async () => { try { await api("/api/restore", { name: x.trash }); await load(); toast("Job restored"); } catch (e) { fail(e); } } }); } catch (e) { fail(e); }
+  };
+  if ($("#dBuild")) $("#dBuild").onclick = async () => {
+    if (!guard()) return; const b = $("#dBuild"), o = $("#dOut"); b.disabled = true; o.hidden = false; o.textContent = "Exporting through Word...";
+    try { o.textContent = (await api("/api/build", { folder: r.folder })).output; } catch (e) { o.textContent = e.message; } b.disabled = false; load();
+  };
+  const first = curFile ? curFile : (files.find(f => f.name === "README.md") || {}).path;
+  const done = first ? showFile(first) : Promise.resolve();
+  if (keep) { $(".d-side").scrollTop = keep.side; done.then(() => { $(".d-main").scrollTop = keep.main; }); }
+}
+function editDetails(r) {
+  const root = $("#modal-root"), prev = document.activeElement;
+  root.innerHTML = `<div class="modal-back"><form class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="modal-ic">${ic("edit", 22)}</div><h3 id="mt">Edit job details</h3><p>The job folder keeps its original name.</p>
+    <div class="field"><label class="lbl" for="eCo">Company</label><input class="input" id="eCo" value="${esc(r.company)}"></div>
+    <div class="field"><label class="lbl" for="eRole">Role</label><input class="input" id="eRole" value="${esc(r.role)}"></div>
+    <div class="field"><label class="lbl" for="eUrl">Job link</label><input class="input" id="eUrl" type="url" value="${esc(r.url)}" placeholder="https://..."></div>
+    <div class="modal-actions"><button type="button" class="btn sec" data-r="0">Cancel</button><button type="submit" class="btn">Save</button></div></form></div>`;
+  const close = () => { root.innerHTML = ""; modal = null; prev && prev.focus && prev.focus(); };
+  modal = { close };
+  root.onclick = e => { if (e.target.closest("[data-r]") || e.target.classList.contains("modal-back")) close(); };
+  $("form", root).onsubmit = async e => {
+    e.preventDefault(); if (!guard()) return;
+    const co = $("#eCo").value.trim(), ro = $("#eRole").value.trim(); if (!co || !ro) { toast("Company and role are required.", { kind: "err" }); return; }
+    try { await api("/api/update", { idx: r.idx, company: co, role: ro, url: $("#eUrl").value }); close(); await load(); toast("Details saved"); } catch (er) { fail(er); }
+  };
+  $("#eCo").focus(); $("#eCo").select();
 }
 async function showFile(path) {
   curFile = path; editing = false;
-  document.querySelectorAll("#fileList [data-f]").forEach(b => b.setAttribute("aria-current", b.dataset.f === path));
+  $$("#fileList [data-f]").forEach(b => b.setAttribute("aria-current", b.dataset.f === path));
   const v = $("#viewer"), ext = path.split(".").pop().toLowerCase(), name = path.split("/").pop();
-  const bar = extra => `<div class="btns" style="margin:0 0 12px"><b style="align-self:center;margin-right:auto">${esc(name)}</b>${extra}</div>`;
+  const bar = extra => `<div class="vbar"><b>${ic(ext === "pdf" ? "pdf" : "file", 16)} ${esc(name)}</b>${extra}</div>`;
   if (ext === "pdf") {
-    v.classList.remove("md"); v.innerHTML = bar(`<button class="btn sec" id="vOpen">Open in viewer</button>`) + `<iframe title="${esc(name)}" src="/api/file?path=${encodeURIComponent(path)}"></iframe>`;
-    $("#vOpen").onclick = async () => { if (guard()) api("/api/open", { path }).catch(e => toast(e.message)); };
-    return;
+    v.classList.remove("md"); v.innerHTML = bar(`<button class="btn sec sm" id="vOpen">${ic("link", 14)} Open</button>`) + `<iframe title="${esc(name)}" src="/api/file?path=${encodeURIComponent(path)}"></iframe>`;
+    $("#vOpen").onclick = () => guard() && api("/api/open", { path }).catch(fail); return;
   }
-  if (["docx"].includes(ext)) { v.innerHTML = bar(`<button class="btn sec" id="vOpen">Open in Word</button>`); $("#vOpen").onclick = () => guard() && api("/api/open", { path }); return; }
-  const text = await fetch("/api/file?path=" + encodeURIComponent(path)).then(r => r.text());
-  const canEdit = ["md", "txt", "json"].includes(ext);
+  if (ext === "docx") { v.classList.remove("md"); v.innerHTML = bar(`<button class="btn sec sm" id="vOpen">${ic("link", 14)} Open in Word</button>`); $("#vOpen").onclick = () => guard() && api("/api/open", { path }).catch(fail); return; }
+  const text = await fetch("/api/file?path=" + encodeURIComponent(path)).then(r => r.text()), canEdit = ["md", "txt", "json"].includes(ext);
   const draw = () => {
     if (editing) {
-      v.classList.remove("md");
-      v.innerHTML = bar(`<button class="btn" id="vSave">Save</button><button class="btn sec" id="vCancel">Cancel</button>`) + `<textarea id="vText" style="min-height:60vh" spellcheck="false"></textarea>`;
-      $("#vText").value = text;
-      $("#vCancel").onclick = () => { editing = false; draw(); };
-      $("#vSave").onclick = async () => { try { await api("/api/save", { path, content: $("#vText").value }); toast("Saved"); showFile(path); } catch (e) { toast("Error: " + e.message, 5000); } };
+      v.classList.remove("md"); v.innerHTML = bar(`<button class="btn sm" id="vSave">Save</button><button class="btn sec sm" id="vCancel">Cancel</button>`) + `<textarea class="input" id="vText" style="min-height:60vh" spellcheck="false"></textarea>`;
+      $("#vText").value = text; $("#vText").dataset.orig = text; $("#vCancel").onclick = () => { editing = false; draw(); };
+      const save = async () => { try { await api("/api/save", { path, content: $("#vText").value }); toast("Saved"); showFile(path); } catch (e) { fail(e); } };
+      $("#vSave").onclick = save; $("#vText").onkeydown = e => { if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); save(); } };
     } else {
-      const copyBtn = `<button class="btn sec" id="vCopy">Copy</button>`;
       v.classList.toggle("md", ext === "md");
-      v.innerHTML = bar(copyBtn + (canEdit ? `<button class="btn sec" id="vEdit">Edit</button>` : "")) + (ext === "md" ? md(text) : `<pre>${esc(text)}</pre>`);
-      $("#vCopy").onclick = () => { navigator.clipboard.writeText(text).then(() => toast("Copied")); };
+      v.innerHTML = bar(`<button class="btn sec sm" id="vCopy">${ic("copy", 14)} Copy</button>` + (canEdit ? `<button class="btn sec sm" id="vEdit">${ic("edit", 14)} Edit</button>` : "")) + (ext === "md" ? md(text) : `<pre>${esc(text)}</pre>`);
+      $("#vCopy").onclick = () => copy(text, "Copied");
       if (canEdit) $("#vEdit").onclick = () => { if (!guard()) return; editing = true; draw(); };
     }
   };
@@ -365,18 +777,15 @@ async function showFile(path) {
 
 /* ---------- tiny markdown renderer (input is escaped first) ---------- */
 function md(src) {
-  const inline = s => esc(s)
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+  const inline = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/\bTODO\b/g, '<span class="todo">TODO</span>');
+    .replace(/\[FILL IN[^\]]*\]|\bTODO\b/g, m => `<span class="todo">${m}</span>`);
   const L = src.replace(/\r/g, "").split("\n"); let o = "", i = 0;
   while (i < L.length) {
     const l = L[i];
-    if (/^```/.test(l)) { let b = []; i++; while (i < L.length && !/^```/.test(L[i])) b.push(L[i++]); i++; o += `<pre style="background:var(--surface-2);padding:10px;border-radius:8px;overflow:auto">${esc(b.join("\n"))}</pre>`; continue; }
+    if (/^```/.test(l)) { let b = []; i++; while (i < L.length && !/^```/.test(L[i])) b.push(L[i++]); i++; o += `<pre>${esc(b.join("\n"))}</pre>`; continue; }
     if (/^\|.*\|\s*$/.test(l) && /^\|[\s:|-]+\|\s*$/.test(L[i + 1] || "")) {
-      const cells = r => r.trim().slice(1, -1).split("|").map(c => c.trim());
-      const head = cells(l); i += 2; let rows = [];
+      const cells = r => r.trim().slice(1, -1).split("|").map(c => c.trim()); const head = cells(l); i += 2; const rows = [];
       while (i < L.length && /^\|.*\|\s*$/.test(L[i])) rows.push(cells(L[i++]));
       o += `<table><thead><tr>${head.map(h => `<th>${inline(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`; continue;
     }
@@ -384,31 +793,42 @@ function md(src) {
     if ((m = l.match(/^(#{1,3})\s+(.*)/))) { o += `<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`; i++; continue; }
     if (/^---+\s*$/.test(l)) { o += "<hr>"; i++; continue; }
     if (/^>\s?/.test(l)) { o += `<blockquote>${inline(l.replace(/^>\s?/, ""))}</blockquote>`; i++; continue; }
-    if (/^\s*[-*]\s+/.test(l)) { let it = []; while (i < L.length && /^\s*[-*]\s+/.test(L[i])) it.push(L[i++].replace(/^\s*[-*]\s+(\[[ x]\]\s*)?/, (_, c) => c ? (c.includes("x") ? "&#9745; " : "&#9744; ") : "")); o += `<ul>${it.map(x => `<li>${x.startsWith("&#97") ? x.slice(0, 8) + inline(x.slice(8)) : inline(x)}</li>`).join("")}</ul>`; continue; }
-    if (/^\s*\d+\.\s+/.test(l)) { let it = []; while (i < L.length && /^\s*\d+\.\s+/.test(L[i])) it.push(L[i++].replace(/^\s*\d+\.\s+/, "")); o += `<ol>${it.map(x => `<li>${inline(x)}</li>`).join("")}</ol>`; continue; }
+    if (/^\s*[-*]\s+/.test(l)) { const it = []; while (i < L.length && /^\s*[-*]\s+/.test(L[i])) it.push(L[i++].replace(/^\s*[-*]\s+/, "")); o += `<ul>${it.map(x => { const c = x.match(/^\[([ x])\]\s*(.*)/); return `<li>${c ? (c[1] === "x" ? "&#9745; " : "&#9744; ") + inline(c[2]) : inline(x)}</li>`; }).join("")}</ul>`; continue; }
+    if (/^\s*\d+\.\s+/.test(l)) { const it = []; while (i < L.length && /^\s*\d+\.\s+/.test(L[i])) it.push(L[i++].replace(/^\s*\d+\.\s+/, "")); o += `<ol>${it.map(x => `<li>${inline(x)}</li>`).join("")}</ol>`; continue; }
     if (!l.trim()) { i++; continue; }
-    let p = [l]; i++; while (i < L.length && L[i].trim() && !/^(#|>|\||```|\s*[-*]\s|\s*\d+\.\s|---)/.test(L[i])) p.push(L[i++]);
+    const p = [l]; i++; while (i < L.length && L[i].trim() && !/^(#|>|\||```|\s*[-*]\s|\s*\d+\.\s|---)/.test(L[i])) p.push(L[i++]);
     o += `<p>${inline(p.join(" "))}</p>`;
   }
   return o;
 }
 
-/* ---------- boot ---------- */
-document.querySelectorAll("#nav button").forEach(b => b.onclick = () => setView(b.dataset.view));
-$("#scrim").onclick = closeDrawer;
-document.addEventListener("keydown", e => { if (e.key === "Escape" && openIdx !== null) closeDrawer(); });
+/* ---------- global keys, theme, boot ---------- */
+document.addEventListener("keydown", e => {
+  if (modal) { if (e.key === "Escape") { modal.close(false); e.preventDefault(); } else if (e.key === "Tab") { const b = $$("#modal-root button"), i = b.indexOf(document.activeElement); e.preventDefault(); b[(i + (e.shiftKey ? -1 : 1) + b.length) % b.length].focus(); } return; }
+  if (pop) { if (e.key === "Escape") { closePop(); e.preventDefault(); return; } if (pop.onKey && pop.onKey(e)) return; }
+  if (e.key === "Escape" && openIdx !== null) { requestClose(); return; }
+  const t = e.target, typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+  if (typing || e.ctrlKey || e.metaKey || e.altKey || !S) return;
+  if (e.key === "/" ) { e.preventDefault(); if (view !== "pipeline") setView("pipeline"); const q = $("#q"); q && q.focus(); }
+  else if (e.key.toLowerCase() === "n") { e.preventDefault(); setView("add"); }
+});
+$("#scrim").onclick = requestClose;
 $("#themeBtn").onclick = () => {
   const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
   const next = cur === "dark" ? "light" : "dark"; document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("theme", next); } catch { }
+  try { localStorage.setItem("theme", next); } catch { } if (S) renderNav();
 };
 try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch { }
+$("#main").innerHTML = `<div class="skeleton" style="height:56px;max-width:420px;margin-bottom:22px"></div><div class="stats">${'<div class="skeleton"></div>'.repeat(4)}</div>`;
 load().then(() => {
-  // shortcuts: #view=add|profile|tools  and  #job=<row index>
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("view")) setView(h.get("view"));
   if (h.get("job") !== null && S.rows[+h.get("job")]) openDrawer(+h.get("job"));
-}).catch(e => { $("#main").innerHTML = `<div class="panel"><b>Could not reach the server.</b><br>${esc(e.message)}<br>Start it with <code>python ui/server.py</code>.</div>`; });
+}).catch(e => {
+  const file = location.protocol === "file:";
+  $("#main").innerHTML = `<div class="panel" style="max-width:640px"><h3>${file ? "This page was opened as a file." : "Could not reach the server."}</h3><p class="sub">${file ? "The dashboard needs its small local server. Do not double-click index.html." : esc(e.message)}</p>
+    <ol class="steps"><li>Double-click <code>start-dashboard.cmd</code> in the project folder (or run <code>python ui/server.py</code>).</li><li>Open <a href="http://127.0.0.1:8765">http://127.0.0.1:8765</a> in your browser.</li></ol></div>`;
+});
 </script>
 </body>
 </html>

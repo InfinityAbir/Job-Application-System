@@ -23,7 +23,7 @@ Help Abir Hasan win software jobs in Bangladesh and abroad. He applies to many c
 | `scripts/track.py` | Application tracker (`applications.csv`) |
 | `scripts/check_links.py` | Wake/check live demo links before interviews |
 | `jobs/<date>_<company>_<role>/` | One folder per application, everything for that job lives inside (layout below) |
-| `ui/server.py` + `ui/index.html` | Local web dashboard (`python ui/server.py`, http://127.0.0.1:8765): pipeline board, add job, view/edit job files, edit profile. It never calls an AI; it hands Abir ready-made prompts to paste into an agent. |
+| `ui/server.py` + `ui/index.html` | Local web dashboard (`start-dashboard.cmd` or `python ui/server.py`, http://127.0.0.1:8765): pipeline board, add job, view/edit job files, edit profile, trash/restore. It never calls an AI; it hands Abir ready-made prompts to paste into an agent. Deleted jobs are moved to `jobs/_trash/` (recoverable); never write job files there. |
 
 ### Job folder layout (created by `new_job.py`)
 ```

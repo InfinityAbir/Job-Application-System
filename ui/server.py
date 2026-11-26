@@ -11,9 +11,11 @@ import json
 import mimetypes
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -52,7 +54,37 @@ def safe_path(rel: str, roots=("jobs", "profile")) -> Path:
 
 def job_folders():
     d = ROOT / "jobs"
-    return sorted([x for x in d.iterdir() if x.is_dir()], reverse=True) if d.exists() else []
+    return sorted([x for x in d.iterdir() if x.is_dir() and not x.name.startswith("_")], reverse=True) if d.exists() else []
+
+
+def trash_dir() -> Path:
+    return (ROOT / "jobs" / "_trash").resolve()
+
+
+def trash_entry(name: str) -> Path:
+    """Validated path of one entry inside jobs/_trash. Never anything outside it."""
+    if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9._-]*", name or ""):
+        raise ValueError("bad trash name")
+    p = (trash_dir() / name).resolve()
+    if p.parent != trash_dir() or not p.is_dir():
+        raise PermissionError("not a trash entry")
+    return p
+
+
+def trash_entries():
+    out = []
+    t = trash_dir()
+    if t.exists():
+        for d in sorted((x for x in t.iterdir() if x.is_dir()), key=lambda x: x.name, reverse=True):
+            meta = {}
+            try:
+                meta = json.loads((d / ".row.json").read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                pass
+            files = sum(1 for p in d.rglob("*") if p.is_file() and p.name != ".row.json")
+            out.append({"name": d.name, "company": meta.get("company", d.name), "role": meta.get("role", ""),
+                        "status": meta.get("status", ""), "deleted": meta.get("_deleted", ""), "files": files})
+    return out
 
 
 def list_files(folder: Path):
@@ -71,7 +103,13 @@ def state():
         r["folder"] = f
         r["exists"] = bool(f) and (ROOT / f).is_dir()
     jobs = {f.relative_to(ROOT).as_posix(): list_files(f) for f in job_folders()}
-    return {"demo": DEMO, "rows": rows, "files": jobs, "statuses": STATUSES, "today": __import__("datetime").date.today().isoformat(),
+    todos = 0
+    for p in ("profile/master_profile.md", "profile/stories.md"):
+        fp = ROOT / p
+        if fp.exists():
+            t = fp.read_text(encoding="utf-8", errors="replace")
+            todos += t.count("TODO") + t.count("[FILL IN")
+    return {"demo": DEMO, "todos": todos, "trash": trash_entries(), "rows": rows, "files": jobs, "statuses": STATUSES, "today": __import__("datetime").date.today().isoformat(),
             "profile": [p for p in ["profile/master_profile.md", "profile/stories.md"] if (ROOT / p).exists()]}
 
 
@@ -129,6 +167,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 self.wfile.write(body)
+            elif u.path == "/favicon.ico":
+                self.send_response(204)
+                self.end_headers()
             elif u.path == "/api/state":
                 self.send_json(state())
             elif u.path == "/api/file":
@@ -204,13 +245,70 @@ class Handler(BaseHTTPRequestHandler):
             r["status"] = d["status"]
             if d["status"] in ("rejected", "offer", "ghosted"):
                 r["follow_up"] = ""
-        for k in ("follow_up", "note"):
+        for k in ("follow_up", "note", "company", "role", "url"):
             if k in d:
-                r[k] = str(d[k])
+                v = str(d[k]).strip() if k in ("company", "role", "url") else str(d[k])
+                if k in ("company", "role") and not v:
+                    raise ValueError(f"{k} cannot be empty")
+                r[k] = v
         track.save(rows)
         f = (r.get("folder") or "").rstrip("/")
+        if ("company" in d or "role" in d) and f and (ROOT / f).is_dir():
+            rd = safe_path(f, ("jobs",)) / "README.md"
+            if rd.exists():
+                lines = rd.read_text(encoding="utf-8").split("\n")
+                if lines and lines[0].startswith("# "):
+                    lines[0] = f"# {r['company']}: {r['role']}"
+                    rd.write_text("\n".join(lines), encoding="utf-8")
         if "status" in d and f and (ROOT / f).is_dir():
             set_readme_status(safe_path(f, ("jobs",)), d["status"], d.get("note", ""))
+        return {"ok": True}
+
+    def api_delete(self, d):
+        """Move a job to jobs/_trash (recoverable) and remove it from the tracker."""
+        rows = track.load()
+        i = int(d["idx"])
+        r = rows[i]
+        folder = (r.get("folder") or "").rstrip("/")
+        base = Path(folder).name if folder else (re.sub(r"[^A-Za-z0-9]+", "-", r["company"]).strip("-") or "job")
+        dest = trash_dir() / f"{base}__{time.strftime('%Y%m%d-%H%M%S')}"
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        src = safe_path(folder, ("jobs",)) if folder else None
+        if src is not None and "_trash" in src.parts:
+            raise PermissionError("already in trash")
+        if src is not None and src.is_dir():
+            shutil.move(str(src), str(dest))
+        else:
+            dest.mkdir()
+        meta = dict(r)
+        meta["_deleted"] = time.strftime("%Y-%m-%d %H:%M")
+        (dest / ".row.json").write_text(json.dumps(meta), encoding="utf-8")
+        del rows[i]
+        track.save(rows)
+        return {"trash": dest.name}
+
+    def api_restore(self, d):
+        src = trash_entry(d["name"])
+        meta = json.loads((src / ".row.json").read_text(encoding="utf-8"))
+        folder = (meta.get("folder") or "").rstrip("/")
+        (src / ".row.json").unlink()
+        if folder:
+            dest = safe_path(folder, ("jobs",))
+            if dest.exists():
+                (src / ".row.json").write_text(json.dumps(meta), encoding="utf-8")
+                raise ValueError("A job folder with that name already exists")
+            shutil.move(str(src), str(dest))
+        else:
+            src.rmdir()
+        meta.pop("_deleted", None)
+        rows = track.load()
+        rows.append({k: meta.get(k, "") for k in track.FIELDS})
+        track.save(rows)
+        return {"ok": True}
+
+    def api_purge(self, d):
+        """Permanently delete one trash entry. Only ever inside jobs/_trash."""
+        shutil.rmtree(trash_entry(d["name"]))
         return {"ok": True}
 
     def api_save(self, d):
