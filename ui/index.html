@@ -208,6 +208,21 @@ textarea.input{min-height:220px;font-family:ui-monospace,Consolas,monospace;font
 .md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid var(--border);color:var(--muted)}
 .md pre{background:var(--surface-2);padding:10px;border-radius:10px;overflow:auto}
 
+/* full-page reader */
+.drawer.wide{width:100%}
+.drawer.wide .d-body{grid-template-columns:minmax(0,1fr)}
+.drawer.wide .d-side{display:none}
+.drawer.wide .d-main{padding:24px clamp(16px,4vw,56px)}
+.drawer.wide .viewer{max-width:1180px;margin:0 auto;padding:26px 32px}
+.drawer.wide .md{font-size:15px;line-height:1.7}
+.drawer.wide .viewer iframe{height:82vh}
+.reader{display:grid;grid-template-columns:230px minmax(0,1fr);gap:34px;align-items:start}
+.outline{position:sticky;top:0;max-height:calc(100vh - 150px);overflow:auto;font-size:13px;padding-right:6px}
+.outline a{display:block;padding:4px 10px;border-left:2px solid var(--border);color:var(--muted);text-decoration:none;line-height:1.35}
+.outline a:hover{color:var(--text);border-color:var(--accent)}
+.outline a.l3{padding-left:22px;font-size:12.5px}
+.md [id]{scroll-margin-top:12px}
+@media (max-width:900px){#vWide{display:none}.reader{grid-template-columns:1fr}.outline{display:none}}
 /* modal + toast */
 .modal-back{position:fixed;inset:0;background:rgba(8,12,18,.55);backdrop-filter:blur(2px);display:grid;place-items:center;z-index:90;padding:16px;animation:fade .15s}
 @keyframes fade{from{opacity:0}}
@@ -305,11 +320,13 @@ const ICONS = {
   bell: '<path d="M12 4a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6M10 20a2 2 0 0 0 4 0"/>',
   chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   clip: '<path d="M16 8l-7 7a2 2 0 0 1-3-3l8-8a4 4 0 0 1 6 6l-8.5 8.5a6 6 0 0 1-8.5-8.5"/>',
+  expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  shrink: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
 };
 const ic = (n, s = 18) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ""}</svg>`;
 
 /* ---------- state ---------- */
-let S = null, view = "pipeline", openIdx = null, curFile = null, editing = false, q = "", profDirty = false;
+let S = null, view = "pipeline", openIdx = null, curFile = null, editing = false, q = "", profDirty = false, wide = false;
 const LABEL = { applied: "Applied", interview: "Interview", offer: "Offer", rejected: "Rejected", ghosted: "No reply" };
 const NAV = [["pipeline", "board", "Pipeline"], ["add", "plus", "Add job"], ["profile", "user", "Profile"], ["trash", "trash", "Trash"], ["tools", "sliders", "Tools & help"]];
 const isDue = r => r.follow_up && r.follow_up <= S.today && ["applied", "interview"].includes(r.status);
@@ -662,8 +679,18 @@ function bindTools() {
 }
 
 /* ---------- drawer ---------- */
-function openDrawer(idx) { openIdx = idx; curFile = null; editing = false; $("#scrim").classList.add("open"); const d = $("#drawer"); d.classList.add("open"); d.setAttribute("aria-hidden", "false"); renderDrawer(); }
-function closeDrawer() { editing = false; openIdx = null; $("#scrim").classList.remove("open"); const d = $("#drawer"); d.classList.remove("open"); d.setAttribute("aria-hidden", "true"); }
+function openDrawer(idx) { openIdx = idx; curFile = null; editing = false; wide = false; $("#drawer").classList.remove("wide"); $("#scrim").classList.add("open"); const d = $("#drawer"); d.classList.add("open"); d.setAttribute("aria-hidden", "false"); renderDrawer(); }
+function closeDrawer() { editing = false; wide = false; $("#drawer").classList.remove("wide"); openIdx = null; $("#scrim").classList.remove("open"); const d = $("#drawer"); d.classList.remove("open"); d.setAttribute("aria-hidden", "true"); }
+async function toggleWide() {
+  if (!(await leaveOk())) return;
+  wide = !wide; $("#drawer").classList.toggle("wide", wide);
+  if (curFile) showFile(curFile);
+}
+function reader(text) {
+  const html = md(text), heads = md.heads.filter(h => h.lvl >= 2);
+  if (!wide || heads.length < 4) return html;
+  return `<div class="reader"><nav class="outline" aria-label="On this page"><h4 class="sec-title">On this page</h4>${heads.map(h => `<a href="#${h.id}" class="l${h.lvl}" data-h="${h.id}">${esc(h.text)}</a>`).join("")}</nav><div>${html}</div></div>`;
+}
 function fileTree(files) {
   const rank = f => (f.name.includes("/") ? 1 : 0) + (f.name === "README.md" ? -1 : 0);
   files = files.slice().sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
@@ -713,6 +740,11 @@ function renderDrawer() {
   const fuDate = DatePick({ value: r.follow_up, placeholder: "No follow-up date", label: "Follow-up date", onChange: v => upd({ follow_up: v }) }); $("#mFollow").append(fuDate.el);
   const fuSel = Select({ options: fuOpts, value: fuOpts[0].value, label: "Follow-up situation" }); $("#mFu").append(fuSel.el);
   const upd = async body => { if (!guard()) return load(); try { await api("/api/update", { idx: r.idx, ...body }); await load(); if (body.status) toast(`${r.company} moved to ${LABEL[body.status]}`); } catch (e) { fail(e); } };
+  $("#viewer").addEventListener("click", e => {
+    if (e.target.closest("#vWide")) { toggleWide(); return; }
+    const a = e.target.closest("[data-h]");
+    if (a) { e.preventDefault(); const el = document.getElementById(a.dataset.h); el && el.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  });
   $("#dClose").onclick = requestClose; $("#dEdit").onclick = () => editDetails(r); $("#dNote").onchange = e => upd({ note: e.target.value });
   if ($("#nxBtn")) $("#nxBtn").onclick = () => copy(nx.p);
   $$("[data-pr]").forEach(b => b.onclick = () => { const k = b.dataset.pr; copy(k === "followup" ? P.followup(fuSel.value) : P[k]); });
@@ -752,7 +784,8 @@ async function showFile(path) {
   curFile = path; editing = false;
   $$("#fileList [data-f]").forEach(b => b.setAttribute("aria-current", b.dataset.f === path));
   const v = $("#viewer"), ext = path.split(".").pop().toLowerCase(), name = path.split("/").pop();
-  const bar = extra => `<div class="vbar"><b>${ic(ext === "pdf" ? "pdf" : "file", 16)} ${esc(name)}</b>${extra}</div>`;
+  const wideBtn = `<button class="btn sec sm" id="vWide" title="${wide ? "Exit full page (Esc)" : "Read in full page"}">${ic(wide ? "shrink" : "expand", 14)} ${wide ? "Exit full page" : "Full page"}</button>`;
+  const bar = extra => `<div class="vbar"><b>${ic(ext === "pdf" ? "pdf" : "file", 16)} ${esc(name)}</b>${extra}${wideBtn}</div>`;
   if (ext === "pdf") {
     v.classList.remove("md"); v.innerHTML = bar(`<button class="btn sec sm" id="vOpen">${ic("link", 14)} Open</button>`) + `<iframe title="${esc(name)}" src="/api/file?path=${encodeURIComponent(path)}"></iframe>`;
     $("#vOpen").onclick = () => guard() && api("/api/open", { path }).catch(fail); return;
@@ -767,7 +800,7 @@ async function showFile(path) {
       $("#vSave").onclick = save; $("#vText").onkeydown = e => { if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); save(); } };
     } else {
       v.classList.toggle("md", ext === "md");
-      v.innerHTML = bar(`<button class="btn sec sm" id="vCopy">${ic("copy", 14)} Copy</button>` + (canEdit ? `<button class="btn sec sm" id="vEdit">${ic("edit", 14)} Edit</button>` : "")) + (ext === "md" ? md(text) : `<pre>${esc(text)}</pre>`);
+      v.innerHTML = bar(`<button class="btn sec sm" id="vCopy">${ic("copy", 14)} Copy</button>` + (canEdit ? `<button class="btn sec sm" id="vEdit">${ic("edit", 14)} Edit</button>` : "")) + (ext === "md" ? reader(text) : `<pre>${esc(text)}</pre>`);
       $("#vCopy").onclick = () => copy(text, "Copied");
       if (canEdit) $("#vEdit").onclick = () => { if (!guard()) return; editing = true; draw(); };
     }
@@ -780,7 +813,7 @@ function md(src) {
   const inline = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
     .replace(/\[FILL IN[^\]]*\]|\bTODO\b/g, m => `<span class="todo">${m}</span>`);
-  const L = src.replace(/\r/g, "").split("\n"); let o = "", i = 0;
+  const L = src.replace(/\r/g, "").split("\n"); let o = "", i = 0; const heads = []; md.heads = heads;
   while (i < L.length) {
     const l = L[i];
     if (/^```/.test(l)) { let b = []; i++; while (i < L.length && !/^```/.test(L[i])) b.push(L[i++]); i++; o += `<pre>${esc(b.join("\n"))}</pre>`; continue; }
@@ -790,7 +823,7 @@ function md(src) {
       o += `<table><thead><tr>${head.map(h => `<th>${inline(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`; continue;
     }
     let m;
-    if ((m = l.match(/^(#{1,3})\s+(.*)/))) { o += `<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`; i++; continue; }
+    if ((m = l.match(/^(#{1,3})\s+(.*)/))) { const id = "h" + heads.length; heads.push({ lvl: m[1].length, text: m[2].replace(/[*`]/g, ""), id }); o += `<h${m[1].length} id="${id}">${inline(m[2])}</h${m[1].length}>`; i++; continue; }
     if (/^---+\s*$/.test(l)) { o += "<hr>"; i++; continue; }
     if (/^>\s?/.test(l)) { o += `<blockquote>${inline(l.replace(/^>\s?/, ""))}</blockquote>`; i++; continue; }
     if (/^\s*[-*]\s+/.test(l)) { const it = []; while (i < L.length && /^\s*[-*]\s+/.test(L[i])) it.push(L[i++].replace(/^\s*[-*]\s+/, "")); o += `<ul>${it.map(x => { const c = x.match(/^\[([ x])\]\s*(.*)/); return `<li>${c ? (c[1] === "x" ? "&#9745; " : "&#9744; ") + inline(c[2]) : inline(x)}</li>`; }).join("")}</ul>`; continue; }
@@ -806,7 +839,7 @@ function md(src) {
 document.addEventListener("keydown", e => {
   if (modal) { if (e.key === "Escape") { modal.close(false); e.preventDefault(); } else if (e.key === "Tab") { const b = $$("#modal-root button"), i = b.indexOf(document.activeElement); e.preventDefault(); b[(i + (e.shiftKey ? -1 : 1) + b.length) % b.length].focus(); } return; }
   if (pop) { if (e.key === "Escape") { closePop(); e.preventDefault(); return; } if (pop.onKey && pop.onKey(e)) return; }
-  if (e.key === "Escape" && openIdx !== null) { requestClose(); return; }
+  if (e.key === "Escape" && openIdx !== null) { if (wide) { toggleWide(); return; } requestClose(); return; }
   const t = e.target, typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
   if (typing || e.ctrlKey || e.metaKey || e.altKey || !S) return;
   if (e.key === "/" ) { e.preventDefault(); if (view !== "pipeline") setView("pipeline"); const q = $("#q"); q && q.focus(); }
