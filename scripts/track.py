@@ -32,6 +32,19 @@ def opt(args, flag):
     return args[args.index(flag) + 1] if flag in args else ""
 
 
+def sync_readme(row, status, note=""):
+    """Keep the job folder's README status line and log in step with the tracker."""
+    import re
+    folder = (row.get("folder") or "").rstrip("/")
+    readme = FILE.parent / folder / "README.md" if folder else None
+    if not readme or not readme.exists():
+        return
+    text = readme.read_text(encoding="utf-8")
+    text = re.sub(r"(\| Status \| ).*?( \|)", lambda m: f"{m.group(1)}{status}{m.group(2)}", text, count=1)
+    text = text.rstrip("\n") + f"\n- {date.today().isoformat()}: status set to {status}" + (f" ({note})" if note else "") + "\n"
+    readme.write_text(text, encoding="utf-8")
+
+
 def main(argv):
     if len(argv) < 2:
         return print(__doc__)
@@ -53,6 +66,7 @@ def main(argv):
         if argv[3] in ("rejected", "offer", "ghosted"):
             hit[-1]["follow_up"] = ""
         save(rows)
+        sync_readme(hit[-1], argv[3], opt(argv, "--note"))
         print("updated")
     elif cmd == "list":
         for r in rows:

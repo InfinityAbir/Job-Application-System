@@ -208,6 +208,15 @@ textarea.input{min-height:220px;font-family:ui-monospace,Consolas,monospace;font
 .md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid var(--border);color:var(--muted)}
 .md pre{background:var(--surface-2);padding:10px;border-radius:10px;overflow:auto}
 
+/* action cards + quick-open rows */
+.act{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--surface)}
+.act-h{display:flex;align-items:center;gap:8px}
+.act p{margin:4px 0 8px;color:var(--muted);font-size:12.5px;line-height:1.45}
+.act-warn{display:flex;gap:7px;align-items:flex-start;font-size:12px;color:var(--warn);margin:0 0 8px;line-height:1.4}
+.act-warn .ic{margin-top:1px}
+button.check{width:calc(100% + 12px);background:none;border:0;text-align:left;border-radius:8px;padding:5px 6px;margin:0 -6px;cursor:pointer;font:inherit}
+button.check:hover{background:var(--surface-2)}
+button.check .go{margin-left:auto;color:var(--muted)}
 /* full-page reader */
 .drawer.wide{width:100%}
 .drawer.wide .d-body{grid-template-columns:minmax(0,1fr)}
@@ -493,8 +502,8 @@ function render() {
 /* ---------- pipeline ---------- */
 function ready(r) {
   const f = (r.folder && S.files[r.folder]) || [], has = (p, min = 0) => f.some(x => x.name === p && x.size > min);
-  return [{ k: "Analysis", ok: has("02_analysis.md", 250), step: "apply" }, { k: "CV (PDF)", ok: has("03_cv/Abir_Hasan_CV.pdf"), step: "apply" },
-          { k: "Email", ok: has("04_email/application_email.txt"), step: "apply" }, { k: "Interview prep", ok: has("05_prep/prep.md"), step: "prep" }];
+  return [{ k: "Analysis", ok: has("02_analysis.md", 250), step: "apply", path: "02_analysis.md" }, { k: "CV (PDF)", ok: has("03_cv/Abir_Hasan_CV.pdf"), step: "apply", path: "03_cv/Abir_Hasan_CV.pdf" },
+          { k: "Email", ok: has("04_email/application_email.txt"), step: "apply", path: "04_email/application_email.txt" }, { k: "Interview prep", ok: has("05_prep/prep.md"), step: "prep", path: "05_prep/prep.md", wide: true }];
 }
 function card(r) {
   const due = isDue(r), soon = isSoon(r), rd = ready(r);
@@ -681,6 +690,13 @@ function bindTools() {
 /* ---------- drawer ---------- */
 function openDrawer(idx) { openIdx = idx; curFile = null; editing = false; wide = false; $("#drawer").classList.remove("wide"); $("#scrim").classList.add("open"); const d = $("#drawer"); d.classList.add("open"); d.setAttribute("aria-hidden", "false"); renderDrawer(); }
 function closeDrawer() { editing = false; wide = false; $("#drawer").classList.remove("wide"); openIdx = null; $("#scrim").classList.remove("open"); const d = $("#drawer"); d.classList.remove("open"); d.setAttribute("aria-hidden", "true"); }
+async function openKey(r, rel, wideMode) {
+  if (!(await leaveOk())) return;
+  const path = r.folder + "/" + rel;
+  if (wideMode && !wide) { wide = true; $("#drawer").classList.add("wide"); }
+  curFile = path; await showFile(path);
+  const m = $(".d-main"); if (m) m.scrollTop = 0;
+}
 async function toggleWide() {
   if (!(await leaveOk())) return;
   wide = !wide; $("#drawer").classList.toggle("wide", wide);
@@ -703,10 +719,10 @@ function fileTree(files) {
   return out;
 }
 function nextStep(r, rd, P) {
-  if (!rd[0].ok || !rd[1].ok || !rd[2].ok) return { t: "Generate the application pack", d: "Copy the prompt and paste it into your AI assistant. It writes the analysis, CV PDF and email into this folder.", b: "Copy apply prompt", p: P.apply };
+  if (r.status === "applied" && (!rd[0].ok || !rd[1].ok || !rd[2].ok)) return { t: "Generate the application pack", d: "Copy the prompt and paste it into your AI assistant. It writes the analysis, CV PDF and email into this folder.", b: "Copy apply prompt", p: P.apply };
   if (isDue(r)) return { t: "Follow up now", d: "This application has had no reply since the follow-up date.", b: "Copy follow-up prompt", p: P.followup("no reply after a week") };
   if (r.status === "interview" && !rd[3].ok) return { t: "Prepare for the interview", d: "Get a company-specific guide with likely questions and answers.", b: "Copy prep prompt", p: P.prep };
-  if (r.status === "interview") return { t: "Practise with a mock interview", d: "A realistic round with scored feedback.", b: "Copy mock prompt", p: P.mock };
+  if (r.status === "interview") return { t: "Study your prep guide", d: "Open the guide in full page and read it. When you feel ready, practise with a mock interview.", open: "05_prep/prep.md", wide: true, b: "Open study guide", b2: "Copy mock prompt", p2: P.mock };
   if (r.status === "applied") return { t: "Send your application", d: "Review the CV and email, send the email yourself, then wait. You will be reminded to follow up.", b: null };
   if (r.status === "offer") return { t: "Compare and respond", d: "Review the offer terms; ask for a follow-up prompt if you want help negotiating.", b: "Copy offer prompt", p: P.followup("I received an offer") };
   return null;
@@ -715,6 +731,8 @@ function renderDrawer() {
   const r = S.rows[openIdx]; if (!r) return closeDrawer();
   const keep = $(".d-side") ? { side: $(".d-side").scrollTop, main: $(".d-main").scrollTop } : null;
   const files = r.folder ? (S.files[r.folder] || []) : [], P = prompts(r.folder || "(no folder)", r), rd = ready(r), nx = nextStep(r, rd, P);
+  const applyDone = rd[0].ok || rd[1].ok || rd[2].ok, prepDone = rd[3].ok;
+  const act = (title, desc, extra, btns, warn) => `<div class="act"><div class="act-h"><b>${esc(title)}</b></div><p>${esc(desc)}</p>${extra}${warn ? `<div class="act-warn">${ic("alert", 14)}<span>${esc(warn)}</span></div>` : ""}<div class="btns">${btns}</div></div>`;
   const stOpts = S.statuses.map(s => ({ value: s, label: LABEL[s], dot: `var(--${s})` }));
   const fuOpts = ["no reply after a week", "interview finished, write thank-you", "I received an offer", "I was rejected"].map(x => ({ value: x, label: x }));
   $("#drawer").innerHTML = `
@@ -726,14 +744,19 @@ function renderDrawer() {
     <button class="icon-btn danger" id="dDel" aria-label="Delete job" title="Delete job">${ic("trash", 18)}</button>
     <button class="icon-btn" id="dClose" aria-label="Close" title="Close (Esc)">${ic("x", 18)}</button></div>
   <div class="d-body"><div class="d-side">
-    ${nx ? `<div class="next"><b>${esc(nx.t)}</b><p>${esc(nx.d)}</p>${nx.b ? `<button class="btn sm" id="nxBtn">${ic("copy", 14)} ${esc(nx.b)}</button>` : ""}</div>` : ""}
-    <div><h4 class="sec-title">Progress</h4>${rd.map(x => `<div class="check ${x.ok ? "ok" : ""}"><span class="ci">${x.ok ? ic("check", 12) : ""}</span>${esc(x.k)}</div>`).join("")}</div>
+    ${nx ? `<div class="next"><b>${esc(nx.t)}</b><p>${esc(nx.d)}</p><div class="btns">${nx.open ? `<button class="btn sm" id="nxOpen">${ic("expand", 14)} ${esc(nx.b)}</button>` : nx.b ? `<button class="btn sm" id="nxBtn">${ic("copy", 14)} ${esc(nx.b)}</button>` : ""}${nx.b2 ? `<button class="btn sec sm" id="nxBtn2">${ic("copy", 14)} ${esc(nx.b2)}</button>` : ""}</div></div>` : ""}
+    <div><h4 class="sec-title">Progress</h4>${rd.map(x => x.ok ? `<button class="check ok" data-open="${esc(x.path)}" data-wide="${x.wide ? 1 : 0}" title="Open ${esc(x.k)}"><span class="ci">${ic("check", 12)}</span>${esc(x.k)}<span class="go">${ic("right", 14)}</span></button>` : `<div class="check"><span class="ci"></span>${esc(x.k)}</div>`).join("")}</div>
     <div><h4 class="sec-title">Details</h4>
       <div class="field"><span class="lbl">Stage</span><div id="mStatus"></div></div>
       <div class="field"><span class="lbl">Follow-up date</span><div id="mFollow"></div></div>
       <div class="field" style="margin:0"><label class="lbl" for="dNote">Note</label><input class="input" id="dNote" value="${esc(r.note)}" placeholder="e.g. interview Sat 10:30"></div></div>
-    <div><h4 class="sec-title">Ask your AI assistant</h4><div class="btns"><button class="btn sec sm" data-pr="apply" title="Copies a prompt: analysis, tailored CV PDF, email">Apply</button><button class="btn sec sm" data-pr="prep" title="Copies a prompt: company research and interview prep guide">Prep</button><button class="btn sec sm" data-pr="mock" title="Copies a prompt: mock interview with scored feedback">Mock</button></div>
-      <div id="mFu" style="margin-top:10px"></div><div class="btns" style="margin-top:8px"><button class="btn sec sm" data-pr="followup" title="Copies a prompt for the situation chosen above">Follow-up</button>${files.some(f => f.name === "03_cv/cv_spec.json") ? `<button class="btn sec sm" id="dBuild" title="Rebuild the CV PDF from cv_spec.json using Word">${ic("refresh", 14)} Rebuild CV</button>` : ""}</div><div class="out" id="dOut" hidden></div></div>
+    <div><h4 class="sec-title">Ask your AI assistant</h4><p class="hint" style="margin:-2px 0 10px">Each button copies a prompt. Paste it into your AI assistant, opened in this project folder.</p>
+      ${act("Apply", "Writes the fit analysis, a tailored CV PDF, the application email and a LinkedIn message.", "", `<button class="btn sec sm" data-pr="apply" ${applyDone ? `data-warn="${esc("The analysis, CV or email already exist for this job. The AI assistant may replace them, and any edits you made could be lost.")}"` : ""}>${ic("copy", 14)} ${applyDone ? "Copy again" : "Copy prompt"}</button>`, applyDone ? "Already done. Running it again may replace those files." : "")}
+      ${act("Prep", "Researches the company and your CV, then writes the study guide (company brief, likely questions and answers, plan).", "", prepDone ? `<button class="btn sm" data-open="05_prep/prep.md" data-wide="1">${ic("expand", 14)} Open study guide</button><button class="btn ghost sm" data-pr="prep" data-warn="${esc("prep.md already exists. Running Prep again may replace it, including any answers you filled in.")}">Regenerate...</button>` : `<button class="btn sec sm" data-pr="prep">${ic("copy", 14)} Copy prompt</button>`, prepDone ? "Your study guide already exists. Regenerating may replace it." : "")}
+      ${act("Mock interview", "A realistic interviewer asks one question at a time, then scores your answers. Best after you have studied the prep guide.", "", `<button class="btn sec sm" data-pr="mock">${ic("copy", 14)} Copy prompt</button>`, "")}
+      ${act("Follow-up", "Drafts a follow-up, thank-you, offer or rejection reply. Pick the situation first.", `<div id="mFu" style="margin-bottom:8px"></div>`, `<button class="btn sec sm" data-pr="followup">${ic("copy", 14)} Copy prompt</button>`, "")}
+      ${files.some(f => f.name === "03_cv/cv_spec.json") ? act("Rebuild CV PDF", "Regenerates the PDF from cv_spec.json using Microsoft Word.", "", `<button class="btn sec sm" id="dBuild">${ic("refresh", 14)} Rebuild CV</button>`, "") : ""}
+      <div class="out" id="dOut" hidden></div></div>
     <div><h4 class="sec-title">Files</h4>${r.folder && r.exists ? `<ul class="files" id="fileList">${fileTree(files)}</ul>` : `<div class="hint">No folder yet. Use Add job to create one.</div>`}</div>
   </div><div class="d-main"><div class="viewer md" id="viewer"><div class="empty">Select a file on the left. Start with README.md.</div></div></div></div>`;
   const stSel = Select({ options: stOpts, value: r.status, label: "Stage", onChange: v => upd({ status: v }) }); $("#mStatus").append(stSel.el);
@@ -747,7 +770,14 @@ function renderDrawer() {
   });
   $("#dClose").onclick = requestClose; $("#dEdit").onclick = () => editDetails(r); $("#dNote").onchange = e => upd({ note: e.target.value });
   if ($("#nxBtn")) $("#nxBtn").onclick = () => copy(nx.p);
-  $$("[data-pr]").forEach(b => b.onclick = () => { const k = b.dataset.pr; copy(k === "followup" ? P.followup(fuSel.value) : P[k]); });
+  if ($("#nxOpen")) $("#nxOpen").onclick = () => openKey(r, nx.open, nx.wide);
+  if ($("#nxBtn2")) $("#nxBtn2").onclick = () => copy(nx.p2);
+  $$("[data-open]").forEach(b => b.onclick = () => openKey(r, b.dataset.open, b.dataset.wide === "1"));
+  $$("[data-pr]").forEach(b => b.onclick = async () => {
+    const k = b.dataset.pr;
+    if (b.dataset.warn && !(await confirmDialog({ title: "Replace existing files?", body: b.dataset.warn + " Copy the prompt anyway?", confirm: "Copy anyway", danger: true, icon: "alert" }))) return;
+    copy(k === "followup" ? P.followup(fuSel.value) : P[k]);
+  });
   $$("#fileList [data-f]").forEach(b => b.onclick = async () => { if (await leaveOk()) showFile(b.dataset.f); });
   if ($("#dOpen")) $("#dOpen").onclick = async () => { if (guard()) try { await api("/api/open", { path: r.folder }); } catch (e) { fail(e); } };
   $("#dDel").onclick = async () => {

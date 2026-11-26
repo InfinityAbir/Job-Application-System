@@ -133,7 +133,9 @@ This is also my exploration of designing **agent-friendly projects**: clear rout
 
 ### 5. Dashboard
 - **Kanban pipeline** with search, drag-and-drop between stages, follow-up reminders and a per-card progress bar (analysis, CV, email, prep)
-- **"Next step" guidance** on every job: it tells you what to do next and copies the right prompt for your AI assistant
+- **"Next step" guidance** on every job: it tells you what to do next, opens your study guide directly, or copies the right prompt for your AI assistant
+- **Plain-language action cards** (Apply, Prep, Mock interview, Follow-up) that describe what each one does, and a **warning before anything could overwrite** files that already exist
+- **One-click quick open:** finished items in the Progress list (analysis, CV, email, prep guide) open straight into the viewer
 - **Add job** form with validation, a custom themed calendar and dropdowns, and a ready-to-paste prompt after the folder is created
 - File viewer (Markdown rendered, PDF embedded) and editor, with protection against losing unsaved changes
 - **Safe delete:** deleting a job moves it to a Trash page where you can restore it (or undo straight away). Deleting from Trash is permanent and asks for confirmation first
