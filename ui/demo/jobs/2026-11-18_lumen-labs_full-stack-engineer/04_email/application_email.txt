@@ -1,0 +1,15 @@
+Subject: Application for Full-Stack Engineer - Jane Demo
+
+Dear Hiring Team,
+
+I am applying for the Full-Stack Engineer role at Lumen Labs, which I found on your careers page. I am a recent computer science graduate who builds business applications end to end with ASP.NET Core, Angular and PostgreSQL.
+
+During my internship I helped deliver a recruitment platform with Clean Architecture and role-based access across three user portals. Outside work I built a multi-tenant inbox SaaS and a real-time matching platform, both live online: https://example.com/demo
+
+Scheduling software for clinics is a problem where reliability matters, and I would like to contribute to it. I am available to start immediately and happy to complete a technical task.
+
+My CV is attached. Thank you for your time.
+
+Best regards,
+Jane Demo
+(Sample data. Not a real person.)

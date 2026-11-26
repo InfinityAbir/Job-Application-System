@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Pipeline</title>
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --surface-2:#f0f2f5; --border:#e2e5ea; --text:#17202b; --muted:#667085;
+  --accent:#2457e6; --accent-ink:#ffffff; --ok:#12805c; --warn:#b54708; --bad:#c0262d; --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 16px rgba(16,24,40,.05);
+  --applied:#2457e6; --interview:#7a3df0; --offer:#12805c; --rejected:#8a929e; --ghosted:#b54708;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1319; --surface:#171c24; --surface-2:#1f2631; --border:#2a3240; --text:#e8ecf2; --muted:#98a2b3;
+  --accent:#6b93ff; --accent-ink:#0b1020; --ok:#4cc79b; --warn:#f0a35e; --bad:#ff7b80; --shadow:0 1px 2px rgba(0,0,0,.4);
+  --applied:#6b93ff; --interview:#a98bff; --offer:#4cc79b; --rejected:#7b8494; --ghosted:#f0a35e; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1319; --surface:#171c24; --surface-2:#1f2631; --border:#2a3240; --text:#e8ecf2; --muted:#98a2b3;
+  --accent:#6b93ff; --accent-ink:#0b1020; --ok:#4cc79b; --warn:#f0a35e; --bad:#ff7b80; --shadow:0 1px 2px rgba(0,0,0,.4);
+  --applied:#6b93ff; --interview:#a98bff; --offer:#4cc79b; --rejected:#7b8494; --ghosted:#f0a35e; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+aside{background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+.brand{font-weight:700;font-size:15px;padding:4px 10px 14px;display:flex;align-items:center;gap:8px}
+.brand i{width:22px;height:22px;border-radius:6px;background:var(--accent);display:inline-block}
+nav button{display:flex;width:100%;align-items:center;gap:10px;background:none;border:0;border-radius:8px;padding:9px 10px;text-align:left;cursor:pointer;color:var(--muted)}
+nav button:hover{background:var(--surface-2);color:var(--text)}
+nav button[aria-current="page"]{background:var(--surface-2);color:var(--text);font-weight:600}
+nav .count{margin-left:auto;font-size:12px;background:var(--bad);color:#fff;border-radius:99px;padding:0 7px}
+.side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:8px 10px}
+main{padding:28px 32px;max-width:1500px;width:100%;min-width:0}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:24px;line-height:1.2}
+.stat span{color:var(--muted);font-size:12px}
+.board{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:14px;overflow-x:auto;padding-bottom:8px}
+.col{background:var(--surface-2);border-radius:12px;padding:10px;min-height:120px}
+.col h3{margin:2px 6px 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;justify-content:space-between}
+.col h3::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block;margin-right:8px;align-self:center}
+.col h3 span:first-child{display:flex;align-items:center}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow);width:100%;text-align:left;display:block}
+.card:hover{border-color:var(--accent)}
+.card:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card b{display:block}
+.card small{color:var(--muted)}
+.pill{display:inline-block;font-size:11px;border-radius:99px;padding:1px 8px;margin-top:6px;border:1px solid var(--border);color:var(--muted)}
+.pill.due{color:var(--bad);border-color:var(--bad);font-weight:600}
+.empty{color:var(--muted);font-size:13px;padding:6px 8px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:860px}
+label{display:block;font-weight:600;font-size:13px;margin:14px 0 4px}
+input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+textarea{min-height:220px;font-family:ui-monospace,Consolas,monospace;font-size:13px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn.sec{background:var(--surface-2);color:var(--text);border:1px solid var(--border);font-weight:500}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.hint{color:var(--muted);font-size:12px;margin-top:4px}
+.banner{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid var(--warn);color:var(--text);border-radius:10px;padding:10px 14px;margin-bottom:18px}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,14,20,.45);display:none;z-index:10}
+.scrim.open{display:block}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(1040px,100%);background:var(--bg);z-index:11;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.2)}
+.drawer.open{transform:none}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.d-head{padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:12px;align-items:flex-start}
+.d-head h2{margin:0;font-size:18px}
+.d-body{display:grid;grid-template-columns:270px 1fr;flex:1;min-height:0}
+.d-side{border-right:1px solid var(--border);overflow:auto;padding:16px;background:var(--surface)}
+.d-main{overflow:auto;padding:18px 22px}
+.files{list-style:none;margin:8px 0;padding:0}
+.files button{width:100%;text-align:left;background:none;border:0;padding:5px 8px;border-radius:6px;cursor:pointer;color:var(--text);font-size:13px;word-break:break-all}
+.files button:hover{background:var(--surface-2)}
+.files button[aria-current="true"]{background:var(--surface-2);font-weight:600}
+.files .grp{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 8px 2px}
+.viewer{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;min-height:300px}
+.viewer pre{white-space:pre-wrap;font:13px/1.55 ui-monospace,Consolas,monospace;margin:0}
+.viewer iframe{width:100%;height:70vh;border:0;border-radius:8px}
+.md h1{font-size:20px;margin:0 0 10px}.md h2{font-size:16px;margin:20px 0 6px}.md h3{font-size:14px;margin:16px 0 4px}
+.md p{margin:8px 0}.md ul,.md ol{margin:6px 0 6px 20px;padding:0}.md code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:12.5px}
+.md table{border-collapse:collapse;margin:10px 0;width:100%}.md th,.md td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top}.md th{background:var(--surface-2)}
+.md hr{border:0;border-top:1px solid var(--border);margin:16px 0}
+.md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid var(--border);color:var(--muted)}
+.out{background:var(--surface-2);border-radius:8px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;margin-top:10px;max-height:240px;overflow:auto}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:30;display:none;max-width:90vw}
+.toast.show{display:block}
+.promptbox{background:var(--surface-2);border:1px dashed var(--border);border-radius:8px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;margin-top:8px;white-space:pre-wrap}
+.todo{background:color-mix(in srgb,var(--warn) 25%,transparent);border-radius:3px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+.steps li{counter-increment:s;padding:10px 0 10px 40px;position:relative;border-bottom:1px solid var(--border)}
+.steps li:last-child{border:0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:26px;height:26px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;font-size:12px}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  aside{position:static;height:auto;flex-direction:row;overflow-x:auto;padding:10px;border-right:0;border-bottom:1px solid var(--border)}
+  .brand,.side-foot{display:none}
+  nav{display:flex;gap:4px}
+  nav button{white-space:nowrap}
+  main{padding:18px 16px}
+  .row{grid-template-columns:1fr}
+  .d-body{grid-template-columns:1fr;overflow:auto}
+  .d-side{border-right:0;border-bottom:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><i></i> Job Pipeline</div>
+    <nav id="nav" aria-label="Main">
+      <button data-view="pipeline">Pipeline <span class="count" id="dueCount" hidden></span></button>
+      <button data-view="add">Add job</button>
+      <button data-view="profile">Profile</button>
+      <button data-view="tools">Tools &amp; help</button>
+    </nav>
+    <div class="side-foot"><span id="modeLabel">Local</span><br><button class="btn sec" id="themeBtn" style="margin-top:8px;padding:4px 10px;font-size:12px">Toggle theme</button></div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div class="scrim" id="scrim"></div>
+<section class="drawer" id="drawer" aria-label="Job details" aria-hidden="true"></section>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let S = null, view = "pipeline", openIdx = null, curFile = null, editing = false;
+const LABEL = { applied: "Applied", interview: "Interview", offer: "Offer", rejected: "Rejected", ghosted: "No reply" };
+
+async function api(path, body) {
+  const opt = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json", "X-Requested-With": "jobsys" }, body: JSON.stringify(body) };
+  const r = await fetch(path, opt);
+  const t = await r.text();
+  let j; try { j = JSON.parse(t); } catch { j = null; }
+  if (!r.ok) throw new Error((j && j.error) || t || r.statusText);
+  return j ?? t;
+}
+function toast(m, ms = 2600) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), ms); }
+async function copy(text) { try { await navigator.clipboard.writeText(text); toast("Copied. Paste it into your AI coding assistant."); } catch { toast("Copy failed. Select the text and copy it manually."); } }
+const isDue = r => r.follow_up && r.follow_up <= S.today && ["applied", "interview"].includes(r.status);
+function guard() { if (S.demo) { toast("Demo mode is read-only."); return false; } return true; }
+
+async function load() {
+  S = await api("/api/state");
+  $("#modeLabel").textContent = S.demo ? "Demo (sample data)" : "Local, private";
+  const due = S.rows.filter(isDue).length;
+  const c = $("#dueCount"); c.hidden = !due; c.textContent = due;
+  render();
+  if (openIdx !== null) renderDrawer();
+}
+function setView(v) {
+  view = v;
+  document.querySelectorAll("#nav button").forEach(b => b.setAttribute("aria-current", b.dataset.view === v ? "page" : "false"));
+  render();
+}
+function render() {
+  document.querySelectorAll("#nav button").forEach(b => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
+  const m = $("#main");
+  const banner = S.demo ? `<div class="banner"><b>Demo mode.</b> Fictional sample data, read-only. The real version runs privately on the owner's PC.</div>` : "";
+  m.innerHTML = banner + ({ pipeline: vPipeline, add: vAdd, profile: vProfile, tools: vTools }[view])();
+  if (view === "add") bindAdd();
+  if (view === "profile") bindProfile();
+  if (view === "tools") bindTools();
+  if (view === "pipeline") document.querySelectorAll(".card").forEach(c => c.onclick = () => openDrawer(+c.dataset.idx));
+}
+
+/* ---------- views ---------- */
+function vPipeline() {
+  const n = st => S.rows.filter(r => r.status === st).length, due = S.rows.filter(isDue);
+  const stats = `<div class="stats">
+    <div class="stat"><b>${S.rows.length}</b><span>Applications</span></div>
+    <div class="stat"><b>${n("interview")}</b><span>In interview stage</span></div>
+    <div class="stat"><b>${n("offer")}</b><span>Offers</span></div>
+    <div class="stat"><b style="color:${due.length ? "var(--bad)" : "inherit"}">${due.length}</b><span>Follow-ups due</span></div>
+    <div class="stat"><b>${S.rows.length ? Math.round(100 * (n("interview") + n("offer")) / S.rows.length) + "%" : "-"}</b><span>Reached interview or offer</span></div></div>`;
+  const cols = S.statuses.map(st => {
+    const rows = S.rows.filter(r => r.status === st);
+    return `<div class="col" style="--c:var(--${st})"><h3><span>${LABEL[st]}</span><span>${rows.length}</span></h3>${rows.map(card).join("") || `<div class="empty">Nothing here</div>`}</div>`;
+  }).join("");
+  const first = S.rows.length ? "" : `<div class="panel" style="margin-bottom:18px"><b>No applications yet.</b> Go to <a href="#" onclick="setView('add');return false">Add job</a>, paste a job description, and follow the three steps.</div>`;
+  return `<h1>Pipeline</h1><p class="sub">Every application, one folder each. Click a card to open its files.</p>${first}${stats}<div class="board">${cols}</div>`;
+}
+function card(r) {
+  const due = isDue(r);
+  return `<button class="card" data-idx="${r.idx}"><b>${esc(r.company)}</b><small>${esc(r.role)}</small><br>
+    <small>Applied ${esc(r.applied)}</small>
+    ${r.follow_up ? `<br><span class="pill ${due ? "due" : ""}">${due ? "Follow up now" : "Follow up " + esc(r.follow_up)}</span>` : ""}
+    ${r.note ? `<br><small>${esc(r.note)}</small>` : ""}</button>`;
+}
+function vAdd() {
+  return `<h1>Add a job</h1><p class="sub">Paste the job description. This creates the job's folder; your AI assistant then writes the CV, analysis and email.</p>
+  <div class="panel"><form id="addForm">
+    <div class="row"><div><label for="company">Company</label><input id="company" required placeholder="e.g. BSD"></div>
+    <div><label for="role">Role</label><input id="role" required placeholder="e.g. Junior Software Engineer"></div></div>
+    <div class="row"><div><label for="url">Job link</label><input id="url" type="url" placeholder="https://..."></div>
+    <div><label for="source">Source</label><select id="source"><option>LinkedIn</option><option>Bdjobs</option><option>Company site</option><option>Email</option><option>Referral</option><option>Other</option></select></div></div>
+    <label for="deadline">Deadline (optional)</label><input id="deadline" type="date" style="max-width:220px">
+    <label for="jd">Job description</label><textarea id="jd" placeholder="Paste the full job description here"></textarea>
+    <div class="btns"><button class="btn" id="addBtn">Create job folder</button></div>
+    <div class="hint">Only saved on this computer in the jobs folder. Nothing is sent anywhere.</div>
+  </form><div id="addResult"></div></div>`;
+}
+function bindAdd() {
+  $("#addForm").onsubmit = async e => {
+    e.preventDefault(); if (!guard()) return;
+    const b = $("#addBtn"); b.disabled = true; b.textContent = "Creating...";
+    try {
+      const body = Object.fromEntries(["company", "role", "url", "source", "deadline", "jd"].map(k => [k, $("#" + k).value]));
+      const r = await api("/api/add", body);
+      await load();
+      const row = S.rows.find(x => (x.folder || "") === r.folder);
+      $("#addResult").innerHTML = `<hr style="border:0;border-top:1px solid var(--border);margin:20px 0"><b>Folder created:</b> <code>${esc(r.folder)}</code>
+        <ol class="steps"><li>Open this project folder in your AI coding assistant.</li>
+        <li>Paste this prompt:<div class="promptbox">${esc(prompts(r.folder).apply)}</div><div class="btns"><button class="btn" id="cp">Copy prompt</button>${row ? `<button class="btn sec" id="op">Open job</button>` : ""}</div></li>
+        <li>Review the CV PDF and the email in the job's folder, then send the email yourself.</li></ol>`;
+      $("#cp").onclick = () => copy(prompts(r.folder).apply);
+      if (row) $("#op").onclick = () => openDrawer(row.idx);
+    } catch (err) { toast("Error: " + err.message, 6000); b.disabled = false; b.textContent = "Create job folder"; }
+  };
+}
+function vProfile() {
+  return `<h1>Profile</h1><p class="sub">The source of truth for every CV and answer. Fill the <span class="todo">TODO</span> lines: this is what makes the output good.</p>
+  <div class="panel" style="max-width:1000px"><div class="btns" style="margin:0 0 10px">${S.profile.map((p, i) => `<button class="btn ${i ? "sec" : ""}" data-p="${p}">${esc(p.split("/").pop())}</button>`).join("")}</div>
+  <textarea id="pText" style="min-height:460px" spellcheck="false"></textarea>
+  <div class="btns"><button class="btn" id="pSave">Save</button><span class="hint" id="pInfo" style="align-self:center"></span></div></div>`;
+}
+function bindProfile() {
+  let cur = S.profile[0];
+  const loadP = async p => {
+    cur = p; const t = await fetch("/api/file?path=" + encodeURIComponent(p)).then(r => r.text());
+    $("#pText").value = t; const n = (t.match(/TODO/g) || []).length;
+    $("#pInfo").textContent = n ? `${n} TODO item${n > 1 ? "s" : ""} left to fill` : "No TODO items left";
+    document.querySelectorAll("[data-p]").forEach(b => b.classList.toggle("sec", b.dataset.p !== p));
+  };
+  document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => loadP(b.dataset.p));
+  $("#pSave").onclick = async () => { if (!guard()) return; try { await api("/api/save", { path: cur, content: $("#pText").value }); toast("Saved"); loadP(cur); } catch (e) { toast("Error: " + e.message, 5000); } };
+  if (cur) loadP(cur);
+}
+function vTools() {
+  return `<h1>Tools &amp; help</h1><p class="sub">How the system works, and small helpers.</p>
+  <div class="panel"><h3 style="margin-top:0">The workflow</h3><ol class="steps">
+    <li><b>Add job</b> here (paste the description). A folder with the standard layout is created.</li>
+    <li><b>Apply:</b> paste the copied prompt into your AI coding assistant, opened in this project folder. It writes the fit analysis, the tailored CV (PDF) and the email into the job folder.</li>
+    <li><b>Review and send</b> the email yourself. Nothing is ever sent automatically.</li>
+    <li><b>Interview call?</b> Open the job and copy the Prep prompt. Then use Mock for practice and Follow-up after.</li>
+    <li>Update the <b>status</b> on the card as things move.</li></ol>
+    <h3>Check live demo links</h3><p class="hint">Free hosts sleep. Wake your project links before an interview. Takes up to a few minutes.</p>
+    <div class="btns" style="margin-top:6px"><button class="btn" id="lnk">Check links now</button></div><div class="out" id="lnkOut" hidden></div></div>`;
+}
+function bindTools() {
+  $("#lnk").onclick = async () => {
+    if (!guard()) return; const b = $("#lnk"), o = $("#lnkOut"); b.disabled = true; b.textContent = "Checking..."; o.hidden = false; o.textContent = "Working. Slow sites can take up to 90 seconds each...";
+    try { o.textContent = (await api("/api/links", {})).output; } catch (e) { o.textContent = e.message; }
+    b.disabled = false; b.textContent = "Check links now";
+  };
+}
+
+/* ---------- prompts ---------- */
+function prompts(folder, row) {
+  const n = row ? `${row.company}, ${row.role}` : folder;
+  return {
+    apply: `Apply to this job using workflows/apply.md. Job folder: ${folder}. The job description is already saved in 01_job-description.md. Reuse this folder (do not create a new one) and write the fit analysis, tailored CV PDF, application email and LinkedIn message.`,
+    prep: `Prepare me for my interview using workflows/prep.md: ${n}. Job folder: ${folder}.${row && row.note ? " Interview details: " + row.note + "." : ""} Research the company and write company_research.md and prep.md in 05_prep.`,
+    mock: `Run a full mock interview using workflows/mock.md for the job in ${folder}. Use 05_prep/prep.md and my CV.`,
+    followup: s => `Use workflows/followup.md. Job folder: ${folder}. Situation: ${s}`
+  };
+}
+
+/* ---------- drawer ---------- */
+function openDrawer(idx) { openIdx = idx; curFile = null; editing = false; $("#scrim").classList.add("open"); const d = $("#drawer"); d.classList.add("open"); d.setAttribute("aria-hidden", "false"); renderDrawer(); }
+function closeDrawer() { openIdx = null; $("#scrim").classList.remove("open"); const d = $("#drawer"); d.classList.remove("open"); d.setAttribute("aria-hidden", "true"); }
+function fileTree(files) {
+  let g = "", out = "";
+  const rank = f => (f.name.includes("/") ? 1 : 0) + (f.name === "README.md" ? -1 : 0);
+  files = files.slice().sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  for (const f of files) {
+    const parts = f.name.split("/"), grp = parts.length > 1 ? parts[0] : "Overview";
+    if (grp !== g) { g = grp; out += `<li class="grp">${esc(grp)}</li>`; }
+    out += `<li><button data-f="${esc(f.path)}" aria-current="${f.path === curFile}">${esc(parts[parts.length - 1])}</button></li>`;
+  }
+  return out;
+}
+function renderDrawer() {
+  const r = S.rows[openIdx]; if (!r) return closeDrawer();
+  const files = r.folder ? (S.files[r.folder] || []) : [];
+  const P = prompts(r.folder || "(no folder)", r);
+  $("#drawer").innerHTML = `
+  <div class="d-head"><div style="flex:1"><h2>${esc(r.company)}</h2><div class="sub" style="margin:0">${esc(r.role)} &middot; applied ${esc(r.applied)}</div></div>
+    <button class="btn sec" id="dClose" aria-label="Close">Close</button></div>
+  <div class="d-body">
+    <div class="d-side">
+      <label for="dStatus" style="margin-top:0">Status</label>
+      <select id="dStatus">${S.statuses.map(s => `<option value="${s}" ${s === r.status ? "selected" : ""}>${LABEL[s]}</option>`).join("")}</select>
+      <label for="dFollow">Follow-up date</label><input type="date" id="dFollow" value="${esc(r.follow_up)}">
+      <label for="dNote">Note</label><input id="dNote" value="${esc(r.note)}" placeholder="e.g. interview Sat 10:30">
+      ${r.url ? `<div class="hint" style="margin-top:10px"><a href="${esc(r.url)}" target="_blank" rel="noopener">Job post</a></div>` : ""}
+      <label>Ask your AI assistant (copy a prompt)</label>
+      <div class="btns" style="margin-top:4px"><button class="btn sec" data-pr="apply">Apply</button><button class="btn sec" data-pr="prep">Prep</button><button class="btn sec" data-pr="mock">Mock</button></div>
+      <select id="fuSel" style="margin-top:8px"><option>no reply after a week</option><option>interview finished, write thank-you</option><option>I received an offer</option><option>I was rejected</option></select>
+      <div class="btns" style="margin-top:6px"><button class="btn sec" data-pr="followup">Follow-up</button></div>
+      ${r.folder ? `<div class="btns"><button class="btn sec" id="dBuild">Rebuild CV</button><button class="btn sec" id="dOpen">Open folder</button></div>` : ""}
+      <div class="out" id="dOut" hidden></div>
+      <label>Files</label>
+      ${r.folder && r.exists ? `<ul class="files" id="fileList">${fileTree(files)}</ul>` : `<div class="hint">No folder yet. Use Add job to create one.</div>`}
+    </div>
+    <div class="d-main"><div class="viewer md" id="viewer"><div class="empty">Select a file on the left. Start with README.md.</div></div></div>
+  </div>`;
+  $("#dClose").onclick = closeDrawer;
+  const upd = async body => { if (!guard()) return load(); try { await api("/api/update", { idx: r.idx, ...body }); await load(); } catch (e) { toast("Error: " + e.message, 5000); } };
+  $("#dStatus").onchange = e => upd({ status: e.target.value });
+  $("#dFollow").onchange = e => upd({ follow_up: e.target.value });
+  $("#dNote").onchange = e => upd({ note: e.target.value });
+  document.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => {
+    const k = b.dataset.pr; copy(k === "followup" ? P.followup($("#fuSel").value) : P[k]);
+  });
+  document.querySelectorAll("#fileList [data-f]").forEach(b => b.onclick = () => showFile(b.dataset.f));
+  if (r.folder && $("#dOpen")) {
+    $("#dOpen").onclick = async () => { if (guard()) try { await api("/api/open", { path: r.folder }); } catch (e) { toast(e.message); } };
+    $("#dBuild").onclick = async () => {
+      if (!guard()) return; const b = $("#dBuild"), o = $("#dOut"); b.disabled = true; b.textContent = "Building..."; o.hidden = false; o.textContent = "Exporting through Word...";
+      try { const x = await api("/api/build", { folder: r.folder }); o.textContent = x.output; } catch (e) { o.textContent = e.message; }
+      b.disabled = false; b.textContent = "Rebuild CV"; load();
+    };
+  }
+  if (curFile) showFile(curFile); else if (files.find(f => f.name === "README.md")) showFile(files.find(f => f.name === "README.md").path);
+}
+async function showFile(path) {
+  curFile = path; editing = false;
+  document.querySelectorAll("#fileList [data-f]").forEach(b => b.setAttribute("aria-current", b.dataset.f === path));
+  const v = $("#viewer"), ext = path.split(".").pop().toLowerCase(), name = path.split("/").pop();
+  const bar = extra => `<div class="btns" style="margin:0 0 12px"><b style="align-self:center;margin-right:auto">${esc(name)}</b>${extra}</div>`;
+  if (ext === "pdf") {
+    v.classList.remove("md"); v.innerHTML = bar(`<button class="btn sec" id="vOpen">Open in viewer</button>`) + `<iframe title="${esc(name)}" src="/api/file?path=${encodeURIComponent(path)}"></iframe>`;
+    $("#vOpen").onclick = async () => { if (guard()) api("/api/open", { path }).catch(e => toast(e.message)); };
+    return;
+  }
+  if (["docx"].includes(ext)) { v.innerHTML = bar(`<button class="btn sec" id="vOpen">Open in Word</button>`); $("#vOpen").onclick = () => guard() && api("/api/open", { path }); return; }
+  const text = await fetch("/api/file?path=" + encodeURIComponent(path)).then(r => r.text());
+  const canEdit = ["md", "txt", "json"].includes(ext);
+  const draw = () => {
+    if (editing) {
+      v.classList.remove("md");
+      v.innerHTML = bar(`<button class="btn" id="vSave">Save</button><button class="btn sec" id="vCancel">Cancel</button>`) + `<textarea id="vText" style="min-height:60vh" spellcheck="false"></textarea>`;
+      $("#vText").value = text;
+      $("#vCancel").onclick = () => { editing = false; draw(); };
+      $("#vSave").onclick = async () => { try { await api("/api/save", { path, content: $("#vText").value }); toast("Saved"); showFile(path); } catch (e) { toast("Error: " + e.message, 5000); } };
+    } else {
+      const copyBtn = `<button class="btn sec" id="vCopy">Copy</button>`;
+      v.classList.toggle("md", ext === "md");
+      v.innerHTML = bar(copyBtn + (canEdit ? `<button class="btn sec" id="vEdit">Edit</button>` : "")) + (ext === "md" ? md(text) : `<pre>${esc(text)}</pre>`);
+      $("#vCopy").onclick = () => { navigator.clipboard.writeText(text).then(() => toast("Copied")); };
+      if (canEdit) $("#vEdit").onclick = () => { if (!guard()) return; editing = true; draw(); };
+    }
+  };
+  draw();
+}
+
+/* ---------- tiny markdown renderer (input is escaped first) ---------- */
+function md(src) {
+  const inline = s => esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\bTODO\b/g, '<span class="todo">TODO</span>');
+  const L = src.replace(/\r/g, "").split("\n"); let o = "", i = 0;
+  while (i < L.length) {
+    const l = L[i];
+    if (/^```/.test(l)) { let b = []; i++; while (i < L.length && !/^```/.test(L[i])) b.push(L[i++]); i++; o += `<pre style="background:var(--surface-2);padding:10px;border-radius:8px;overflow:auto">${esc(b.join("\n"))}</pre>`; continue; }
+    if (/^\|.*\|\s*$/.test(l) && /^\|[\s:|-]+\|\s*$/.test(L[i + 1] || "")) {
+      const cells = r => r.trim().slice(1, -1).split("|").map(c => c.trim());
+      const head = cells(l); i += 2; let rows = [];
+      while (i < L.length && /^\|.*\|\s*$/.test(L[i])) rows.push(cells(L[i++]));
+      o += `<table><thead><tr>${head.map(h => `<th>${inline(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`; continue;
+    }
+    let m;
+    if ((m = l.match(/^(#{1,3})\s+(.*)/))) { o += `<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`; i++; continue; }
+    if (/^---+\s*$/.test(l)) { o += "<hr>"; i++; continue; }
+    if (/^>\s?/.test(l)) { o += `<blockquote>${inline(l.replace(/^>\s?/, ""))}</blockquote>`; i++; continue; }
+    if (/^\s*[-*]\s+/.test(l)) { let it = []; while (i < L.length && /^\s*[-*]\s+/.test(L[i])) it.push(L[i++].replace(/^\s*[-*]\s+(\[[ x]\]\s*)?/, (_, c) => c ? (c.includes("x") ? "&#9745; " : "&#9744; ") : "")); o += `<ul>${it.map(x => `<li>${x.startsWith("&#97") ? x.slice(0, 8) + inline(x.slice(8)) : inline(x)}</li>`).join("")}</ul>`; continue; }
+    if (/^\s*\d+\.\s+/.test(l)) { let it = []; while (i < L.length && /^\s*\d+\.\s+/.test(L[i])) it.push(L[i++].replace(/^\s*\d+\.\s+/, "")); o += `<ol>${it.map(x => `<li>${inline(x)}</li>`).join("")}</ol>`; continue; }
+    if (!l.trim()) { i++; continue; }
+    let p = [l]; i++; while (i < L.length && L[i].trim() && !/^(#|>|\||```|\s*[-*]\s|\s*\d+\.\s|---)/.test(L[i])) p.push(L[i++]);
+    o += `<p>${inline(p.join(" "))}</p>`;
+  }
+  return o;
+}
+
+/* ---------- boot ---------- */
+document.querySelectorAll("#nav button").forEach(b => b.onclick = () => setView(b.dataset.view));
+$("#scrim").onclick = closeDrawer;
+document.addEventListener("keydown", e => { if (e.key === "Escape" && openIdx !== null) closeDrawer(); });
+$("#themeBtn").onclick = () => {
+  const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark"; document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch { }
+};
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch { }
+load().then(() => {
+  // shortcuts: #view=add|profile|tools  and  #job=<row index>
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("view")) setView(h.get("view"));
+  if (h.get("job") !== null && S.rows[+h.get("job")]) openDrawer(+h.get("job"));
+}).catch(e => { $("#main").innerHTML = `<div class="panel"><b>Could not reach the server.</b><br>${esc(e.message)}<br>Start it with <code>python ui/server.py</code>.</div>`; });
+</script>
+</body>
+</html>

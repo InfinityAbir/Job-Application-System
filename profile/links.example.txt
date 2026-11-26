@@ -1,0 +1,4 @@
+# One URL per line. Copy this file to links.txt and list your own live demos and repos.
+# Free hosting tiers sleep; run `python scripts/check_links.py` before an interview to wake them.
+https://your-project.onrender.com
+https://github.com/your-username/your-project

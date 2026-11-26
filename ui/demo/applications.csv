@@ -1,0 +1,6 @@
+company,role,applied,status,follow_up,url,source,folder,note
+Northwind Systems,Junior .NET Developer,2026-11-20,applied,2026-11-27,https://example.com/jobs/101,LinkedIn,jobs/2026-11-20_northwind_junior-net-developer,
+Lumen Labs,Full-Stack Engineer,2026-11-18,interview,2026-12-01,https://example.com/jobs/102,Company site,jobs/2026-11-18_lumen-labs_full-stack-engineer,"Technical round Sat 10:30, onsite"
+Orbit Pay,Android Developer,2026-11-10,offer,,https://example.com/jobs/103,Referral,jobs/2026-11-10_orbit-pay_android-developer,Offer received; negotiating
+Fable Data,Backend Engineer,2026-11-05,rejected,,https://example.com/jobs/104,Bdjobs,jobs/2026-11-05_fable-data_backend-engineer,
+Tidepool Tech,Software Engineer,2026-11-02,ghosted,,https://example.com/jobs/105,LinkedIn,,

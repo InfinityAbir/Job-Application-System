@@ -1,0 +1,15 @@
+﻿# Personal data: never publish
+jobs/
+applications.csv
+profile/master_profile.md
+profile/stories.md
+profile/links.txt
+profile/base_cv.docx
+profile/base_cv.pdf
+*.pdf
+*.docx
+__pycache__/
+*.pyc
+
+# Public demo data (fictional) is allowed
+!ui/demo/**
